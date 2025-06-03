@@ -1,7 +1,7 @@
-const mongoose = require('mongoose');
-const Kpi = require('../models/kpi'); // assuming you have Kpi model
+const mongoose = require("mongoose");
+const Kpi = require("../models/kpi"); // assuming you have Kpi model
 
-mongoose.connect('mongodb://localhost:27017/kpi_system');
+mongoose.connect("mongodb://localhost:27017/kpi_system");
 
 const kpis = [
   {
@@ -15,7 +15,7 @@ const kpis = [
     dueDate: new Date("2025-06-30"),
     status: "In Progress",
     approvalstat: "Approved",
-    assignedTo: new mongoose.Types.ObjectId("6659fa9fb6e1c2cf81e362b1")
+    assignedTo: new mongoose.Types.ObjectId("6659fa9fb6e1c2cf81e362b1"),
   },
   {
     title: "Launch Email Campaign",
@@ -28,7 +28,7 @@ const kpis = [
     dueDate: new Date("2025-06-25"),
     status: "In Progress",
     approvalstat: "Pending Approval",
-    assignedTo: new mongoose.Types.ObjectId("6659fa9fb6e1c2cf81e362b1")
+    assignedTo: new mongoose.Types.ObjectId("6659fa9fb6e1c2cf81e362b1"),
   },
   {
     title: "Publish 5 Blog Articles",
@@ -41,7 +41,7 @@ const kpis = [
     dueDate: new Date("2025-06-20"),
     status: "Completed",
     approvalstat: "Approved",
-    assignedTo: new mongoose.Types.ObjectId("6659fa9fb6e1c2cf81e362b1")
+    assignedTo: new mongoose.Types.ObjectId("6659fa9fb6e1c2cf81e362b1"),
   },
   {
     title: "Conduct User Feedback Survey",
@@ -54,7 +54,7 @@ const kpis = [
     dueDate: new Date("2025-06-28"),
     status: "Not Started",
     approvalstat: "Rejected",
-    assignedTo: new mongoose.Types.ObjectId("6659fa9fb6e1c2cf81e362b1")
+    assignedTo: new mongoose.Types.ObjectId("6659fa9fb6e1c2cf81e362b1"),
   },
   {
     title: "Boost Social Media Followers",
@@ -67,7 +67,7 @@ const kpis = [
     dueDate: new Date("2025-06-30"),
     status: "In Progress",
     approvalstat: "Pending Approval",
-    assignedTo: new mongoose.Types.ObjectId("6659fa9fb6e1c2cf81e362b2")
+    assignedTo: new mongoose.Types.ObjectId("6659fa9fb6e1c2cf81e362b2"),
   },
   {
     title: "Design New Promotional Banner",
@@ -80,7 +80,7 @@ const kpis = [
     dueDate: new Date("2025-06-18"),
     status: "Not Started",
     approvalstat: "No New Progress",
-    assignedTo: new mongoose.Types.ObjectId("6659fa9fb6e1c2cf81e362b2")
+    assignedTo: new mongoose.Types.ObjectId("6659fa9fb6e1c2cf81e362b2"),
   },
   {
     title: "Update Product Brochures",
@@ -93,7 +93,7 @@ const kpis = [
     dueDate: new Date("2025-06-24"),
     status: "Completed",
     approvalstat: "Approved",
-    assignedTo: new mongoose.Types.ObjectId("6659fa9fb6e1c2cf81e362b2")
+    assignedTo: new mongoose.Types.ObjectId("6659fa9fb6e1c2cf81e362b2"),
   },
   {
     title: "Plan Q3 Marketing Strategy",
@@ -106,7 +106,7 @@ const kpis = [
     dueDate: new Date("2025-06-29"),
     status: "In Progress",
     approvalstat: "Pending Approval",
-    assignedTo: new mongoose.Types.ObjectId("6659fa9fb6e1c2cf81e362b2")
+    assignedTo: new mongoose.Types.ObjectId("6659fa9fb6e1c2cf81e362b2"),
   },
   {
     title: "Deploy System Update v2.0",
@@ -119,7 +119,7 @@ const kpis = [
     dueDate: new Date("2025-06-26"),
     status: "In Progress",
     approvalstat: "Approved",
-    assignedTo: new mongoose.Types.ObjectId("6659fa9fb6e1c2cf81e362b3")
+    assignedTo: new mongoose.Types.ObjectId("6659fa9fb6e1c2cf81e362b3"),
   },
   {
     title: "Prepare System Documentation",
@@ -132,7 +132,7 @@ const kpis = [
     dueDate: new Date("2025-06-28"),
     status: "In Progress",
     approvalstat: "Approved",
-    assignedTo: new mongoose.Types.ObjectId("6659fa9fb6e1c2cf81e362b3")
+    assignedTo: new mongoose.Types.ObjectId("6659fa9fb6e1c2cf81e362b3"),
   },
   {
     title: "Optimize Server Performance",
@@ -145,7 +145,7 @@ const kpis = [
     dueDate: new Date("2025-06-25"),
     status: "In Progress",
     approvalstat: "Pending Approval",
-    assignedTo: new mongoose.Types.ObjectId("6659fa9fb6e1c2cf81e362b3")
+    assignedTo: new mongoose.Types.ObjectId("6659fa9fb6e1c2cf81e362b3"),
   },
   {
     title: "Conduct System Security Audit",
@@ -158,7 +158,7 @@ const kpis = [
     dueDate: new Date("2025-06-30"),
     status: "Not Started",
     approvalstat: "No New Progress",
-    assignedTo: new mongoose.Types.ObjectId("6659fa9fb6e1c2cf81e362b3")
+    assignedTo: new mongoose.Types.ObjectId("6659fa9fb6e1c2cf81e362b3"),
   },
   {
     title: "Fix Reported System Bugs",
@@ -171,7 +171,7 @@ const kpis = [
     dueDate: new Date("2025-06-22"),
     status: "In Progress",
     approvalstat: "No New Progress",
-    assignedTo: new mongoose.Types.ObjectId("6659fa9fb6e1c2cf81e362b3")
+    assignedTo: new mongoose.Types.ObjectId("6659fa9fb6e1c2cf81e362b3"),
   },
   {
     title: "Launch New Marketing Campaign",
@@ -184,7 +184,7 @@ const kpis = [
     dueDate: new Date("2025-07-05"),
     status: "In Progress",
     approvalstat: "Pending Approval",
-    assignedTo: new mongoose.Types.ObjectId("6659fa9fb6e1c2cf81e362b1")
+    assignedTo: new mongoose.Types.ObjectId("6659fa9fb6e1c2cf81e362b1"),
   },
   {
     title: "SEO Optimization",
@@ -197,7 +197,7 @@ const kpis = [
     dueDate: new Date("2025-07-10"),
     status: "In Progress",
     approvalstat: "Approved",
-    assignedTo: new mongoose.Types.ObjectId("6659fa9fb6e1c2cf81e362b1")
+    assignedTo: new mongoose.Types.ObjectId("6659fa9fb6e1c2cf81e362b1"),
   },
   {
     title: "Email Subscriber Growth",
@@ -210,7 +210,7 @@ const kpis = [
     dueDate: new Date("2025-06-30"),
     status: "Not Started",
     approvalstat: "No New Progress",
-    assignedTo: new mongoose.Types.ObjectId("6659fa9fb6e1c2cf81e362b1")
+    assignedTo: new mongoose.Types.ObjectId("6659fa9fb6e1c2cf81e362b1"),
   },
 
   {
@@ -224,7 +224,7 @@ const kpis = [
     dueDate: new Date("2025-06-30"),
     status: "In Progress",
     approvalstat: "Approved",
-    assignedTo: new mongoose.Types.ObjectId("6659fa9fb6e1c2cf81e362b2")
+    assignedTo: new mongoose.Types.ObjectId("6659fa9fb6e1c2cf81e362b2"),
   },
   {
     title: "New Product Feature Rollout",
@@ -237,7 +237,7 @@ const kpis = [
     dueDate: new Date("2025-06-25"),
     status: "In Progress",
     approvalstat: "Pending Approval",
-    assignedTo: new mongoose.Types.ObjectId("6659fa9fb6e1c2cf81e362b2")
+    assignedTo: new mongoose.Types.ObjectId("6659fa9fb6e1c2cf81e362b2"),
   },
   {
     title: "Conduct Customer Feedback Survey",
@@ -250,7 +250,7 @@ const kpis = [
     dueDate: new Date("2025-06-20"),
     status: "Completed",
     approvalstat: "Approved",
-    assignedTo: new mongoose.Types.ObjectId("6659fa9fb6e1c2cf81e362b2")
+    assignedTo: new mongoose.Types.ObjectId("6659fa9fb6e1c2cf81e362b2"),
   },
   {
     title: "Create Monthly Newsletter",
@@ -263,7 +263,7 @@ const kpis = [
     dueDate: new Date("2025-06-15"),
     status: "In Progress",
     approvalstat: "Pending Approval",
-    assignedTo: new mongoose.Types.ObjectId("6659fa9fb6e1c2cf81e362b2")
+    assignedTo: new mongoose.Types.ObjectId("6659fa9fb6e1c2cf81e362b2"),
   },
 
   // User: 6659fa9fb6e1c2cf81e362b3
@@ -278,7 +278,7 @@ const kpis = [
     dueDate: new Date("2025-06-30"),
     status: "In Progress",
     approvalstat: "Approved",
-    assignedTo: new mongoose.Types.ObjectId("6659fa9fb6e1c2cf81e362b3")
+    assignedTo: new mongoose.Types.ObjectId("6659fa9fb6e1c2cf81e362b3"),
   },
   {
     title: "Create New Product Videos",
@@ -291,7 +291,7 @@ const kpis = [
     dueDate: new Date("2025-06-25"),
     status: "In Progress",
     approvalstat: "Rejected",
-    assignedTo: new mongoose.Types.ObjectId("6659fa9fb6e1c2cf81e362b3")
+    assignedTo: new mongoose.Types.ObjectId("6659fa9fb6e1c2cf81e362b3"),
   },
   {
     title: "Host a Webinar",
@@ -304,7 +304,7 @@ const kpis = [
     dueDate: new Date("2025-06-28"),
     status: "Completed",
     approvalstat: "Approved",
-    assignedTo: new mongoose.Types.ObjectId("6659fa9fb6e1c2cf81e362b3")
+    assignedTo: new mongoose.Types.ObjectId("6659fa9fb6e1c2cf81e362b3"),
   },
   {
     title: "Update Website Content",
@@ -317,8 +317,8 @@ const kpis = [
     dueDate: new Date("2025-06-20"),
     status: "Completed",
     approvalstat: "Approved",
-    assignedTo: new mongoose.Types.ObjectId("6659fa9fb6e1c2cf81e362b3")
-  }
+    assignedTo: new mongoose.Types.ObjectId("6659fa9fb6e1c2cf81e362b3"),
+  },
 ];
 
 Kpi.insertMany(kpis)
@@ -326,7 +326,7 @@ Kpi.insertMany(kpis)
     console.log("KPIs seeded!");
     mongoose.connection.close();
   })
-  .catch(err => {
+  .catch((err) => {
     console.error(err);
     mongoose.connection.close();
   });

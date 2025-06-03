@@ -93,9 +93,7 @@ function getStatusBadgeClass(status) {
       return "bg-secondary text-light";
   }
 }
-%>
 
-<%
   let totalKpiCount = kpis.length;
   let inProgressCount = 0;
   let completedCount = 0;
@@ -133,17 +131,17 @@ function getStatusBadgeClass(status) {
   let kpiCounts = sortedWeeks.map(week => kpiCountsByWeek[week]);
 %>
 
-
         <!-- Main Content -->
         <main class="col-12 col-md-10 px-4" id="main-content">
           <div id="kpiAlertContainer"></div>
 
           <h1 class="mt-4 ms-1">My KPI</h1>
+
           <!-- Overall Progress Chart -->
 
           <div class="row mt-4">
             <div class="col-md-4">
-              <div class="card" style="height: 520px">
+              <div class="card" style="height: 480px">
                   <h5 class="text-teal p-3">Overall Progress</h5>
                 <div class="card-body p-4">
                   <canvas id="kpiProgressChart"></canvas>
@@ -153,8 +151,8 @@ function getStatusBadgeClass(status) {
 
             <!-- Area Chart -->
             <div class="col-md-6">
-              <div class="card shadow-sm" style="height: 520px">
-                  <h5 class="text-teal p-3">June Progress</h5>
+              <div class="card shadow-sm" style="height: 480px">
+                  <h5 class="text-teal p-3">Task Progress</h5>
                 <div class="card-body p-4 pt-5">
                   <canvas id="kpiAreaChart"></canvas>
                 </div>
@@ -166,6 +164,193 @@ function getStatusBadgeClass(status) {
           <!-- Chart.js CDN -->
           <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
+          <!-- KPI Stats Overview Cards (Horizontal) -->
+          <div class="row row-cols-1 row-cols-md-5 g-3 mb-4">
+            <div class="col">
+              <div class="card h-100 shadow-sm custom-kpi-card">
+                <div class="card-body d-flex align-items-center">
+                  <div class="me-3">
+                    <span class="badge bg-primary p-2">
+                      <i class="fas fa-tasks fa-lg text-white"></i>
+                    </span>
+                  </div>
+                  <div>
+                    <h6 class="card-title mb-1">Total KPI</h6>
+                    <h5 class="mb-0" id="totalKpiCount"><%= totalKpiCount %></h5>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="col">
+              <div class="card h-100 shadow-sm custom-kpi-card">
+                <div class="card-body d-flex align-items-center">
+                  <div class="me-3">
+                    <span class="badge bg-warning p-2">
+                      <i class="far fa-clock fa-lg text-white"></i>
+                    </span>
+                  </div>
+                  <div>
+                    <h6 class="card-title mb-1">In Progress</h6>
+                    <h5 class="mb-0" id="inProgressCount"><%= inProgressCount %></h5>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="col">
+              <div class="card h-100 shadow-sm custom-kpi-card">
+                <div class="card-body d-flex align-items-center">
+                  <div class="me-3">
+                    <span class="badge bg-success p-2">
+                      <i class="fas fa-check-circle fa-lg text-white"></i>
+                    </span>
+                  </div>
+                  <div>
+                    <h6 class="card-title mb-1">Completed</h6>
+                    <h5 class="mb-0" id="completedCount"><%= completedCount %></h5>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="col">
+              <div class="card h-100 shadow-sm custom-kpi-card">
+                <div class="card-body d-flex align-items-center">
+                  <div class="me-3">
+                    <span class="badge bg-secondary p-2">
+                      <i class="fas fa-pause-circle fa-lg text-white"></i>
+                    </span>
+                  </div>
+                  <div>
+                    <h6 class="card-title mb-1">Not Started</h6>
+                    <h5 class="mb-0" id="notStartedCount"><%= notStartedCount %></h5>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="col">
+              <div class="card h-100 shadow-sm custom-kpi-card">
+                <div class="card-body d-flex align-items-center">
+                  <div class="me-3">
+                    <span class="badge bg-info p-2">
+                      <i class="fas fa-hourglass-half fa-lg text-white"></i>
+                    </span>
+                  </div>
+                  <div>
+                    <h6 class="card-title mb-1">Pending Approval</h6>
+                    <h5 class="mb-0" id="pendingApprovalCount"><%= pendingApprovalCount %></h5>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <br />
+
+          <!-- KPI Block List -->
+          <div id="KPIupdateanchor">
+            <h1 class="mt-1 ms-1">KPI List</h1>
+
+            <!-- Filter Box -->
+            <div class="d-flex mb-3 mt-3">
+              <select id="statusFilter" class="form-select w-auto shadow-sm">
+                <option value="All">All</option>
+                <option value="Completed">Completed</option>
+                <option value="In Progress">In Progress</option>
+                <option value="Not Started">Not Started</option>
+              </select>
+            </div>
+
+<!-- KPI Block Display -->
+<div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4" id="kpiCardsContainerStaff">
+  <% if (kpis.length === 0) { %>
+    <p>No KPIs assigned to you.</p>
+  <% } else { %>
+    <% kpis.forEach(kpi => { 
+      let completion = (kpi.targetNumber > 0) ? ((kpi.progressNumber / kpi.targetNumber) * 100).toFixed(2) : 0;
+    %>
+      <div class="col" data-status="<%= kpi.status %>">
+        <div class="card h-100 shadow-sm custom-kpi-card">
+          <div class="card-body d-flex flex-column">
+
+            <h5 class="card-title mb-3">
+              <a href="/staff/kpi-detail/<%= kpi._id %>" class="text-decoration-none card-title">
+                <%= kpi.title %>
+              </a>
+            </h5>
+
+            <p class="mb-3"><strong>Target:</strong> <%= kpi.target %></p>
+            <p class="mb-3"><strong>Progress:</strong> <%= kpi.progress %></p>
+            <p class="mb-3"><strong>Due Date:</strong> <%= kpi.dueDate.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }) %></p>
+            <p class="mb-3"><strong>Approval Status:</strong> <%= kpi.approvalstat %></p>
+
+            <div class="mb-3">
+              <strong>Status:</strong>
+              <span class="badge <%= getStatusBadgeClass(kpi.status) %>">
+                <%= kpi.status %>
+              </span>
+            </div>
+
+            <div class="mb-4">
+              <p class="mb-2"><strong>Percentage Completion:</strong> <%= completion %>%</p>
+              <div class="progress" style="height: 20px">
+                <div
+                  class="progress-bar btn-success"
+                  role="progressbar"
+                  style="width: <%= completion %>%"
+                  aria-valuenow="<%= parseFloat(kpi.progress) %>"
+                  aria-valuemin="0"
+                  aria-valuemax="100"
+                >
+                </div>
+              </div>
+            </div>
+
+            <div class="mt-auto text-end">
+            <% if (kpi.approvalstat === "Pending Approval") { %>
+              <span class="text-secondary small me-2" style="font-size: 18px;">Pending approval from Manager</span>
+            <% } else if (kpi.status === "Completed") { %>
+              <span class="text-secondary small me-2" style="font-size: 18px;">Task completed</span>
+            <% } else { %>
+              <a href="/kpi/update/<%= kpi._id %>" class="btn btn-warning btn-sm">Update Progress</a>
+            <% } %>
+          </div>
+
+          </div>
+        </div>
+      </div>
+    <% }); %>
+  <% } %>
+</div>
+
+          </div>
+        </main>
+      </div>
+    </div>
+
+    <div id="sidebarOverlay" class="sidebar-overlay"></div>
+
+    <!-- Status Filter Box Script -->
+    <script>
+  document.getElementById('statusFilter').addEventListener('change', function() {
+    const selectedStatus = this.value;
+    const cards = document.querySelectorAll('#kpiCardsContainerStaff .col');
+
+    cards.forEach(card => {
+      const cardStatus = card.getAttribute('data-status');
+
+      if (selectedStatus === 'All' || cardStatus === selectedStatus) {
+        card.style.display = 'block';
+      } else {
+        card.style.display = 'none';
+      }
+    });
+  });
+</script>
+
+<!-- Chart Display Script -->
 <script>
   // Extract KPI data from EJS
   const kpis = <%- JSON.stringify(kpis) %>;
@@ -333,209 +518,5 @@ function getStatusBadgeClass(status) {
   });
 </script>
 
-          <!-- KPI Stats Overview Cards (Horizontal) -->
-          <div class="row row-cols-1 row-cols-md-5 g-3 mb-4">
-            <div class="col">
-              <div class="card h-100 shadow-sm custom-kpi-card">
-                <div class="card-body d-flex align-items-center">
-                  <div class="me-3">
-                    <span class="badge bg-primary p-2">
-                      <i class="fas fa-tasks fa-lg text-white"></i>
-                    </span>
-                  </div>
-                  <div>
-                    <h6 class="card-title mb-1">Total KPI</h6>
-                    <h5 class="mb-0" id="totalKpiCount"><%= totalKpiCount %></h5>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div class="col">
-              <div class="card h-100 shadow-sm custom-kpi-card">
-                <div class="card-body d-flex align-items-center">
-                  <div class="me-3">
-                    <span class="badge bg-warning p-2">
-                      <i class="far fa-clock fa-lg text-white"></i>
-                    </span>
-                  </div>
-                  <div>
-                    <h6 class="card-title mb-1">In Progress</h6>
-                    <h5 class="mb-0" id="inProgressCount"><%= inProgressCount %></h5>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div class="col">
-              <div class="card h-100 shadow-sm custom-kpi-card">
-                <div class="card-body d-flex align-items-center">
-                  <div class="me-3">
-                    <span class="badge bg-success p-2">
-                      <i class="fas fa-check-circle fa-lg text-white"></i>
-                    </span>
-                  </div>
-                  <div>
-                    <h6 class="card-title mb-1">Completed</h6>
-                    <h5 class="mb-0" id="completedCount"><%= completedCount %></h5>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div class="col">
-              <div class="card h-100 shadow-sm custom-kpi-card">
-                <div class="card-body d-flex align-items-center">
-                  <div class="me-3">
-                    <span class="badge bg-secondary p-2">
-                      <i class="fas fa-pause-circle fa-lg text-white"></i>
-                    </span>
-                  </div>
-                  <div>
-                    <h6 class="card-title mb-1">Not Started</h6>
-                    <h5 class="mb-0" id="notStartedCount"><%= notStartedCount %></h5>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div class="col">
-              <div class="card h-100 shadow-sm custom-kpi-card">
-                <div class="card-body d-flex align-items-center">
-                  <div class="me-3">
-                    <span class="badge bg-info p-2">
-                      <i class="fas fa-hourglass-half fa-lg text-white"></i>
-                    </span>
-                  </div>
-                  <div>
-                    <h6 class="card-title mb-1">Pending Approval</h6>
-                    <h5 class="mb-0" id="pendingApprovalCount"><%= pendingApprovalCount %></h5>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <br />
-
-          <!-- KPI Block List -->
-          <div id="KPIupdateanchor">
-            <h1 class="mt-1 ms-1">KPI List</h1>
-
-            <!-- Filter Box -->
-            <div class="d-flex mb-3 mt-3">
-              <select id="statusFilter" class="form-select w-auto shadow-sm">
-                <option value="All">All</option>
-                <option value="Completed">Completed</option>
-                <option value="In Progress">In Progress</option>
-                <option value="Not Started">Not Started</option>
-              </select>
-            </div>
-
-<div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4" id="kpiCardsContainerStaff">
-  <% if (kpis.length === 0) { %>
-    <p>No KPIs assigned to you.</p>
-  <% } else { %>
-    <% kpis.forEach(kpi => { 
-      let completion = (kpi.targetNumber > 0) ? ((kpi.progressNumber / kpi.targetNumber) * 100).toFixed(2) : 0;
-    %>
-      <div class="col" data-status="<%= kpi.status %>">
-        <div class="card h-100 shadow-sm custom-kpi-card">
-          <div class="card-body d-flex flex-column">
-
-            <h5 class="card-title mb-3">
-              <a href="/staff/kpi-detail/<%= kpi._id %>" class="text-decoration-none card-title">
-                <%= kpi.title %>
-              </a>
-            </h5>
-
-            <p class="mb-3"><strong>Target:</strong> <%= kpi.target %></p>
-            <p class="mb-3"><strong>Progress:</strong> <%= kpi.progress %></p>
-            <p class="mb-3"><strong>Due Date:</strong> <%= kpi.dueDate.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }) %></p>
-            <p class="mb-3"><strong>Approval Status:</strong> <%= kpi.approvalstat %></p>
-
-            <div class="mb-3">
-              <strong>Status:</strong>
-              <span class="badge <%= getStatusBadgeClass(kpi.status) %>">
-                <%= kpi.status %>
-              </span>
-            </div>
-
-            <div class="mb-4">
-              <p class="mb-2"><strong>Percentage Completion:</strong> <%= completion %>%</p>
-              <div class="progress" style="height: 20px">
-                <div
-                  class="progress-bar btn-success"
-                  role="progressbar"
-                  style="width: <%= completion %>%"
-                  aria-valuenow="<%= parseFloat(kpi.progress) %>"
-                  aria-valuemin="0"
-                  aria-valuemax="100"
-                >
-                </div>
-              </div>
-            </div>
-
-            <div class="mt-auto text-end">
-              <a href="/kpi/update/<%= kpi._id %>" class="btn btn-warning btn-sm">Update Progress</a>
-            </div>
-
-          </div>
-        </div>
-      </div>
-    <% }); %>
-  <% } %>
-</div>
-
-          </div>
-        </main>
-      </div>
-    </div>
-
-    <div id="sidebarOverlay" class="sidebar-overlay"></div>
-
-    <script>
-  document.getElementById('statusFilter').addEventListener('change', function() {
-    const selectedStatus = this.value;
-    const cards = document.querySelectorAll('#kpiCardsContainerStaff .col');
-
-    cards.forEach(card => {
-      const cardStatus = card.getAttribute('data-status');
-
-      if (selectedStatus === 'All' || cardStatus === selectedStatus) {
-        card.style.display = 'block';
-      } else {
-        card.style.display = 'none';
-      }
-    });
-  });
-</script>
-
-    <script>
-      window.addEventListener("DOMContentLoaded", () => {
-        if (localStorage.getItem("kpiSubmitted") === "true") {
-          const alertContainer = document.getElementById("kpiAlertContainer");
-          const alertBox = document.createElement("div");
-          alertBox.className =
-            "alert alert-success alert-dismissible fade show shadow-sm";
-          alertBox.role = "alert";
-          alertBox.innerHTML = `
-          Your KPI progress update has been submitted for approval. Thank you.
-          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        `;
-          alertContainer.prepend(alertBox);
-
-          // Auto-dismiss after 5 seconds
-          setTimeout(() => {
-            alertBox.classList.remove("show"); // fade it out
-            alertBox.classList.add("fade"); // optional fade effect
-            setTimeout(() => alertBox.remove(), 500); // remove from DOM after fade
-          }, 5000);
-
-          // Remove the flag after showing
-          localStorage.removeItem("kpiSubmitted");
-        }
-      });
-    </script>
   </body>
 </html>

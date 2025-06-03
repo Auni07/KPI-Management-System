@@ -1,7 +1,7 @@
-const mongoose = require('mongoose');
-const User = require('../models/User'); // assuming you have User model
+const mongoose = require("mongoose");
+const User = require("../models/User"); // assuming you have User model
 
-mongoose.connect('mongodb://localhost:27017/kpi_system');
+mongoose.connect("mongodb://localhost:27017/kpi_system");
 
 const users = [
   {
@@ -12,7 +12,7 @@ const users = [
     password: "123",
     role: "manager",
     manager: null,
-    department: null // No specific department for this manager
+    department: null, // No specific department for this manager
   },
   {
     _id: new mongoose.Types.ObjectId("6659fa9fb6e1c2cf81e362a2"),
@@ -22,7 +22,7 @@ const users = [
     password: "123",
     role: "manager",
     manager: null,
-    department: null // No specific department for this manager
+    department: null, // No specific department for this manager
   },
   {
     _id: new mongoose.Types.ObjectId("6659fa9fb6e1c2cf81e362b1"),
@@ -32,7 +32,7 @@ const users = [
     password: "123",
     role: "staff",
     manager: new mongoose.Types.ObjectId("6659fa9fb6e1c2cf81e362a1"), // Alice Manager
-    department: "Sales & Marketing"
+    department: "Sales & Marketing",
   },
   {
     _id: new mongoose.Types.ObjectId("6659fa9fb6e1c2cf81e362b2"),
@@ -42,7 +42,7 @@ const users = [
     password: "123",
     role: "staff",
     manager: new mongoose.Types.ObjectId("6659fa9fb6e1c2cf81e362a2"), // Bob Manager
-    department: "Customer Service"
+    department: "Customer Service",
   },
   {
     _id: new mongoose.Types.ObjectId("6659fa9fb6e1c2cf81e362b3"),
@@ -52,7 +52,7 @@ const users = [
     password: "123",
     role: "staff",
     manager: new mongoose.Types.ObjectId("6659fa9fb6e1c2cf81e362a1"), // Alice Manager
-    department: "HR & Admin"
+    department: "HR & Admin",
   },
   {
     _id: new mongoose.Types.ObjectId("6659fa9fb6e1c2cf81e362b4"),
@@ -62,7 +62,7 @@ const users = [
     password: "123",
     role: "staff",
     manager: new mongoose.Types.ObjectId("6659fa9fb6e1c2cf81e362a1"), // Alice Manager
-    department: "IT"
+    department: "IT",
   },
   {
     _id: new mongoose.Types.ObjectId("6659fa9fb6e1c2cf81e362b5"),
@@ -72,8 +72,8 @@ const users = [
     password: "123",
     role: "staff",
     manager: new mongoose.Types.ObjectId("6659fa9fb6e1c2cf81e362a2"), // Bob Manager
-    department: "Sales & Marketing"
-  }
+    department: "Sales & Marketing",
+  },
 ];
 
 User.insertMany(users)
@@ -81,7 +81,7 @@ User.insertMany(users)
     console.log("Users seeded!");
     mongoose.connection.close();
   })
-  .catch(err => {
+  .catch((err) => {
     console.error(err);
     mongoose.connection.close();
   });
