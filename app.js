@@ -8,7 +8,7 @@ const port = 3000;
 const User = require("./models/User"); // User mongoose model
 const KPI = require("./models/kpi"); // KPI mongoose model
 
-// Serve static files from 'public' or 'styles' folder
+// Serve static files from 'public' folder
 app.use(express.static(path.join(__dirname, "public")));
 
 // Middleware to parse URL-encoded bodies and JSON bodies
