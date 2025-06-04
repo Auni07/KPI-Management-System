@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>KPI Detail</title>
+    <!-- TODO: Change title to specific KPI name -->
+    <link rel="icon" href="../assets/images/logo.png" />
+
+    <!-- Bootstrap & Icons & Styles -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="../styles/style.css" />
+  </head>
+
+  <body>
+    <button class="menu-toggle-btn d-md-none" id="sidebarToggle">☰</button>
+
+    <div class="container-fluid">
+      <div class="row">
+        <!-- Sidebar -->
+        <nav class="d-md-block sidebar" id="sidebarMenu">
+          <div class="sidebar-sticky p-3">
+            <img
+              src="../assets/images/logo.png"
+              alt="Logo"
+              class="img-fluid mb-4"
+              style="max-width: 120px"
+            />
+            <ul class="nav flex-column" id="sidebarLinks"></ul>
+          </div>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="col-12 col-md-10 px-4" id="main-content">
+          <h1 class="mt-4">KPI Detail</h1>
+
+          <div class="card mt-3">
+            <div class="card-body">
+              <h2 class="card-title text-teal"></h2>
+              <p><strong>Target:</strong></p>
+              <p id="kpi-target"></p>
+              <p><strong>Current:</strong></p>
+              <p id="kpi-current"></p>
+              <p><strong>Assigned To:</strong></p>
+              <p id="kpi-staff"></p>
+              <p><strong>Status:</strong></p>
+              <p id="kpi-status"></p>
+              <p><strong>Due Date:</strong></p>
+              <p id="kpi-dueDate"></p>
+            </div>
+
+            <!-- Edit Controls -->
+            <div class="ms-3 mb-4">
+              <button
+                class="btn btn-outline-secondary btn-sm"
+                id="editToggleBtn"
+              >
+                Edit
+              </button>
+              <button class="btn btn-success btn-sm d-none" id="saveChangesBtn">
+                Save
+              </button>
+              <button class="btn btn-danger btn-sm ms-2" id="deleteBtn">
+                Delete
+              </button>
+            </div>
+          </div>
+
+          <h2 class="mt-4 mb-3 text-teal">
+            <i class="fas fa-clock me-2"></i>Evidence Timeline
+          </h2>
+
+          <ul class="timeline">
+            <li>
+              <div class="timeline-badge"><i class="fas fa-upload"></i></div>
+              <div class="timeline-panel">
+                <div class="timeline-heading">
+                  <h6 class="timeline-title">May 8, 2025</h6>
+                </div>
+                <div class="timeline-body">
+                  <p>
+                    <strong>Progress:</strong> Submitted keyword report for
+                    April.
+                  </p>
+                  <p><a href="#">📄 keyword_report_apr.pdf</a></p>
+                </div>
+              </div>
+            </li>
+            <li>
+              <div class="timeline-badge"><i class="fas fa-upload"></i></div>
+              <div class="timeline-panel">
+                <div class="timeline-heading">
+                  <h6 class="timeline-title">April 15, 2025</h6>
+                </div>
+                <div class="timeline-body">
+                  <p>
+                    <strong>Progress:</strong> Uploaded screenshot of analytics
+                    dashboard.
+                  </p>
+                  <p><a href="#">📷 analytics_screenshot.png</a></p>
+                </div>
+              </div>
+            </li>
+            <!-- More entries here -->
+          </ul>
+        </main>
+      </div>
+    </div>
+
+    <div id="sidebarOverlay" class="sidebar-overlay"></div>
+    <script type="module" src="../scripts/render-sidebar.js"></script>
+
+    <script src="../scripts/sample-data.js"></script>
+    <script src="../scripts/manager-kpi-detail.js"></script>
+
+    <!-- TODO: Temporary script to handle the edit button -->
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        const editBtn = document.getElementById("editToggleBtn");
+        const saveBtn = document.getElementById("saveChangesBtn");
+        const deleteBtn = document.getElementById("deleteBtn");
+        const confirmDeleteBtn = document.getElementById("confirmDeleteBtn");
+
+        function createEditableInputs() {
+          const targetEl = document.getElementById("kpi-target");
+          const statusEl = document.getElementById("kpi-status");
+          const dueDateEl = document.getElementById("kpi-dueDate");
+
+          if (!document.getElementById("kpi-target-input")) {
+            const originalTarget = targetEl.textContent.trim();
+            const originalStatus = statusEl.textContent.trim();
+            const originalDueDate = dueDateEl.textContent.trim();
+
+            targetEl.innerHTML = `
+          <input type="text" class="form-control form-control-sm d-inline-block w-auto"
+                 id="kpi-target-input" value="${originalTarget}" />
+        `;
+
+            statusEl.innerHTML = `
+          <select class="form-select form-select-sm d-inline-block w-auto" id="kpi-status-input">
+            <option ${
+              originalStatus === "Pending" ? "selected" : ""
+            }>Pending</option>
+            <option ${
+              originalStatus === "Approved" ? "selected" : ""
+            }>Approved</option>
+            <option ${
+              originalStatus === "Rejected" ? "selected" : ""
+            }>Rejected</option>
+          </select>
+        `;
+
+            dueDateEl.innerHTML = `
+          <input type="date" class="form-control form-control-sm d-inline-block w-auto"
+                 id="kpi-dueDate-input" value="${originalDueDate}" />
+        `;
+          }
+        }
+
+        editBtn.addEventListener("click", function () {
+          createEditableInputs();
+          editBtn.classList.add("d-none");
+          saveBtn.classList.remove("d-none");
+        });
+
+        saveBtn.addEventListener("click", function () {
+          const newTarget = document
+            .getElementById("kpi-target-input")
+            .value.trim();
+          const newStatus = document.getElementById("kpi-status-input").value;
+          const newDueDate = document.getElementById("kpi-dueDate-input").value;
+
+          const originalTarget =
+            document.getElementById("kpi-target-input").defaultValue;
+          const originalDueDate =
+            document.getElementById("kpi-dueDate-input").defaultValue;
+
+          document.getElementById("kpi-target").innerHTML =
+            newTarget || originalTarget;
+          document.getElementById("kpi-status").innerHTML = newStatus;
+          document.getElementById("kpi-dueDate").innerHTML =
+            newDueDate || originalDueDate;
+
+          saveBtn.classList.add("d-none");
+          editBtn.classList.remove("d-none");
+        });
+
+        deleteBtn.addEventListener("click", function () {
+          const modal = new bootstrap.Modal(
+            document.getElementById("deleteConfirmModal")
+          );
+          modal.show();
+        });
+
+        confirmDeleteBtn.addEventListener("click", function () {
+          // TODO: Replace this with actual delete logic (e.g., API call)
+          alert("KPI has been deleted.");
+          // Example: Redirect to dashboard or list page
+          window.location.href = "dashboard.html";
+        });
+      });
+    </script>
+    <!-- Delete Confirmation Modal -->
+    <div
+      class="modal fade"
+      id="deleteConfirmModal"
+      tabindex="-1"
+      aria-labelledby="deleteConfirmLabel"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="deleteConfirmLabel">Confirm Delete</h5>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+              aria-label="Close"
+            ></button>
+          </div>
+          <div class="modal-body">
+            Are you sure you want to delete this KPI?
+          </div>
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn btn-secondary"
+              data-bs-dismiss="modal"
+            >
+              No
+            </button>
+            <button type="button" class="btn btn-danger" id="confirmDeleteBtn">
+              Yes, Delete
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/js/bootstrap.bundle.min.js"></script>
+  </body>
+</html>

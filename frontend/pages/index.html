@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Login</title>
+    <link rel="icon" href="../assets/images/logo.png" />
+
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="../styles/style.css" />
+    
+
+    <style>
+      body {
+        background-color: #f0f2f5;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+      }
+      .login-card {
+        max-width: 800px;
+        width: 100%;
+        padding: 2rem;
+        background: white;
+        border-radius: 10px;
+        box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+        font-size: 18px;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="login-card">
+      <h1 class="text-center mb-4">KPI Management System</h1>
+
+      <form id="loginForm">
+        <div class="mb-3">
+          <label for="email" class="form-label">Email address</label>
+          <input
+            type="email"
+            class="form-control"
+            id="email"
+            required
+            placeholder="Enter email"
+          />
+        </div>
+
+        <div class="mb-3">
+          <label for="password" class="form-label">Password</label>
+          <input
+            type="password"
+            class="form-control"
+            id="password"
+            required
+            placeholder="Password"
+          />
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label">Login as</label>
+          <select class="form-select" id="role" required>
+            <option value="">Select Role</option>
+            <option value="manager">Manager</option>
+            <option value="staff">Staff</option>
+          </select>
+        </div>
+
+        <div class="d-grid mb-3">
+          <button type="submit" class="btn btn-success">Login</button>
+        </div>
+
+        <!-- Register Link Here -->
+        <div class="text-center">
+          <p class="mb-0">Don't have an account?</p>
+          <a href="user-register.html" class="btn btn-link">Register</a>
+        </div>
+      </form>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+      const form = document.getElementById("loginForm");
+
+      form.addEventListener("submit", function (e) {
+        e.preventDefault();
+
+        const role = document.getElementById("role").value;
+        const email = document.getElementById("email").value.trim();
+        const password = document.getElementById("password").value.trim();
+
+        if (!email || !password || !role) {
+          alert("Please fill all fields!");
+          return;
+        }
+
+        localStorage.setItem("userRole", role);
+        window.location.href = "dashboard.html";
+      });
+    </script>
+  </body>
+</html>
