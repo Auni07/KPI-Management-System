@@ -1,0 +1,15 @@
+{
+  "name": "kpi-management-system",
+  "version": "1.0.0",
+  "description": "KPI dashboard backend for WIF2003",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "nodemon server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "mongoose": "^7.6.0",
+    "dotenv": "^16.3.1"
+  }
+}
