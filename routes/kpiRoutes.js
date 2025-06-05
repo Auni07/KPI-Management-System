@@ -1,3 +1,5 @@
+
+const kpiController = require('../controllers/kpiController');
 const express = require('express');
 const router = express.Router();
 const Kpi = require('../models/kpi'); // Make sure path is correct
@@ -31,5 +33,15 @@ router.put('/:id', async (req, res) => {
     res.status(500).json({ message: 'Server error' });
   }
 });
+
+
+// NEW: GET all KPIs with optional filters (delegated to controller) FOR VIEW ASSIGNED KPI MANAGER
+router.get('/', kpiController.getKpis);
+
+// NEW: POST create a new KPI (delegated to controller)
+router.post('/', kpiController.createKpi);
+
+// NEW: DELETE a KPI by ID (delegated to controller)
+router.delete('/:id', kpiController.deleteKpi);
 
 module.exports = router;

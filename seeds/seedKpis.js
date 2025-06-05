@@ -27,7 +27,7 @@ const kpis = [
     startDate: new Date("2025-05-20"),
     dueDate: new Date("2025-06-25"),
     status: "In Progress",
-    approvalstat: "Pending Approval",
+    approvalstat: "Pending",
     assignedTo: new mongoose.Types.ObjectId("6659fa9fb6e1c2cf81e362b1"),
   },
   {
@@ -66,7 +66,7 @@ const kpis = [
     startDate: new Date("2025-06-01"),
     dueDate: new Date("2025-06-30"),
     status: "In Progress",
-    approvalstat: "Pending Approval",
+    approvalstat: "Pending",
     assignedTo: new mongoose.Types.ObjectId("6659fa9fb6e1c2cf81e362b2"),
   },
   {
@@ -79,7 +79,7 @@ const kpis = [
     startDate: new Date("2025-05-19"),
     dueDate: new Date("2025-06-18"),
     status: "Not Started",
-    approvalstat: "No New Progress",
+    approvalstat: "Pending",
     assignedTo: new mongoose.Types.ObjectId("6659fa9fb6e1c2cf81e362b2"),
   },
   {
@@ -105,7 +105,7 @@ const kpis = [
     startDate: new Date("2025-06-01"),
     dueDate: new Date("2025-06-29"),
     status: "In Progress",
-    approvalstat: "Pending Approval",
+    approvalstat: "Pending",
     assignedTo: new mongoose.Types.ObjectId("6659fa9fb6e1c2cf81e362b2"),
   },
   {
@@ -144,7 +144,7 @@ const kpis = [
     startDate: new Date("2025-04-01"),
     dueDate: new Date("2025-06-25"),
     status: "In Progress",
-    approvalstat: "Pending Approval",
+    approvalstat: "Pending",
     assignedTo: new mongoose.Types.ObjectId("6659fa9fb6e1c2cf81e362b3"),
   },
   {
@@ -157,7 +157,7 @@ const kpis = [
     startDate: new Date("2025-06-11"),
     dueDate: new Date("2025-06-30"),
     status: "Not Started",
-    approvalstat: "No New Progress",
+    approvalstat: "Pending",
     assignedTo: new mongoose.Types.ObjectId("6659fa9fb6e1c2cf81e362b3"),
   },
   {
@@ -170,7 +170,7 @@ const kpis = [
     startDate: new Date("2025-06-01"),
     dueDate: new Date("2025-06-22"),
     status: "In Progress",
-    approvalstat: "No New Progress",
+    approvalstat: "Pending",
     assignedTo: new mongoose.Types.ObjectId("6659fa9fb6e1c2cf81e362b3"),
   },
   {
@@ -183,7 +183,7 @@ const kpis = [
     startDate: new Date("2025-06-05"),
     dueDate: new Date("2025-07-05"),
     status: "In Progress",
-    approvalstat: "Pending Approval",
+    approvalstat: "Pending",
     assignedTo: new mongoose.Types.ObjectId("6659fa9fb6e1c2cf81e362b1"),
   },
   {
@@ -209,7 +209,7 @@ const kpis = [
     startDate: new Date("2025-06-01"),
     dueDate: new Date("2025-06-30"),
     status: "Not Started",
-    approvalstat: "No New Progress",
+    approvalstat: "Pending",
     assignedTo: new mongoose.Types.ObjectId("6659fa9fb6e1c2cf81e362b1"),
   },
 
@@ -236,7 +236,7 @@ const kpis = [
     startDate: new Date("2025-06-10"),
     dueDate: new Date("2025-06-25"),
     status: "In Progress",
-    approvalstat: "Pending Approval",
+    approvalstat: "Pending",
     assignedTo: new mongoose.Types.ObjectId("6659fa9fb6e1c2cf81e362b2"),
   },
   {
@@ -262,7 +262,7 @@ const kpis = [
     startDate: new Date("2025-06-01"),
     dueDate: new Date("2025-06-15"),
     status: "In Progress",
-    approvalstat: "Pending Approval",
+    approvalstat: "Pending",
     assignedTo: new mongoose.Types.ObjectId("6659fa9fb6e1c2cf81e362b2"),
   },
 
@@ -317,6 +317,148 @@ const kpis = [
     status: "Completed",
     approvalstat: "Approved",
     assignedTo: new mongoose.Types.ObjectId("6659fa9fb6e1c2cf81e362b3"),
+  },
+  {
+    title: "Complete Q2 Sales Report",
+    description: "Finalize and submit the quarterly sales performance report.",
+    target: "Report submission",
+    targetValue: 100,
+    progress: "100% completed",
+    progressNumber: 100,
+    startDate: new Date("2025-05-15"),
+    dueDate: new Date("2025-06-05"),
+    status: "Completed",
+    approvalstat: "Approved",
+    assignedTo: new mongoose.Types.ObjectId("6659fa9fb6e1c2cf81e362b4"),
+  },
+  // Ali - Rejected KPI 1
+  {
+    title: "Implement New IT Security Protocol",
+    description: "Roll out MFA across all staff accounts.",
+    target: "80% MFA adoption",
+    targetValue: 80,
+    progress: "50% completed",
+    progressNumber: 50,
+    startDate: new Date("2025-05-20"),
+    dueDate: new Date("2025-06-10"),
+    status: "In Progress",
+    approvalstat: "Rejected", // Rejected due to scope changes
+    assignedTo: new mongoose.Types.ObjectId("6659fa9fb6e1c2cf81e362b4"),
+  },
+  // Ali - Rejected KPI 2
+  {
+    title: "Update Server Maintenance Logs",
+    description: "Ensure all server maintenance activities are documented.",
+    target: "100% log accuracy",
+    targetValue: 100,
+    progress: "75% completed",
+    progressNumber: 75,
+    startDate: new Date("2025-06-01"),
+    dueDate: new Date("2025-06-15"),
+    status: "In Progress",
+    approvalstat: "Rejected", // Rejected due to incomplete details
+    assignedTo: new mongoose.Types.ObjectId("6659fa9fb6e1c2cf81e362b4"),
+  },
+  // Ali - Pending KPI 1
+  {
+    title: "Automate Daily Backup Script",
+    description: "Develop and test a new automated backup solution.",
+    target: "Functional script",
+    targetValue: 100,
+    progress: "30% completed",
+    progressNumber: 30,
+    startDate: new Date("2025-06-05"),
+    dueDate: new Date("2025-06-25"),
+    status: "In Progress",
+    approvalstat: "Pending",
+    assignedTo: new mongoose.Types.ObjectId("6659fa9fb6e1c2cf81e362b4"),
+  },
+  // Ali - Pending KPI 2
+  {
+    title: "Conduct Cybersecurity Training",
+    description: "Organize and deliver a training session for new hires.",
+    target: "1 session completed",
+    targetValue: 1,
+    progress: "0% completed",
+    progressNumber: 0,
+    startDate: new Date("2025-06-10"),
+    dueDate: new Date("2025-06-30"),
+    status: "Not Started",
+    approvalstat: "Pending",
+    assignedTo: new mongoose.Types.ObjectId("6659fa9fb6e1c2cf81e362b4"),
+  },
+
+  // --- KPIs for Aliya Natasha (ID: 6659fa9fb6e1c2cf81e362b5) ---
+
+  // Aliya - Approved KPI
+  {
+    title: "Achieve Q2 Sales Target (Aliya)",
+    description: "Close 15 new client contracts.",
+    target: "15 contracts",
+    targetValue: 15,
+    progress: "15 contracts closed",
+    progressNumber: 15,
+    startDate: new Date("2025-05-01"),
+    dueDate: new Date("2025-06-30"),
+    status: "Completed",
+    approvalstat: "Approved",
+    assignedTo: new mongoose.Types.ObjectId("6659fa9fb6e1c2cf81e362b5"),
+  },
+  // Aliya - Rejected KPI 1
+  {
+    title: "Develop New Marketing Campaign",
+    description: "Create and launch a social media campaign for product X.",
+    target: "Campaign launch",
+    targetValue: 100,
+    progress: "60% completed",
+    progressNumber: 60,
+    startDate: new Date("2025-05-25"),
+    dueDate: new Date("2025-06-18"),
+    status: "In Progress",
+    approvalstat: "Rejected", // Rejected due to budget constraints
+    assignedTo: new mongoose.Types.ObjectId("6659fa9fb6e1c2cf81e362b5"),
+  },
+  // Aliya - Rejected KPI 2
+  {
+    title: "Organize Client Feedback Session",
+    description: "Host a webinar to gather feedback from key clients.",
+    target: "1 successful session",
+    targetValue: 1,
+    progress: "100% completed",
+    progressNumber: 1,
+    startDate: new Date("2025-06-03"),
+    dueDate: new Date("2025-06-12"),
+    status: "Completed",
+    approvalstat: "Rejected", // Rejected due to low attendance
+    assignedTo: new mongoose.Types.ObjectId("6659fa9fb6e1c2cf81e362b5"),
+  },
+  // Aliya - Pending KPI 1
+  {
+    title: "Prepare for Annual Sales Review",
+    description: "Consolidate all sales data and presentations for review.",
+    target: "Complete preparation",
+    targetValue: 100,
+    progress: "20% completed",
+    progressNumber: 20,
+    startDate: new Date("2025-06-08"),
+    dueDate: new Date("2025-06-28"),
+    status: "In Progress",
+    approvalstat: "Pending",
+    assignedTo: new mongoose.Types.ObjectId("6659fa9fb6e1c2cf81e362b5"),
+  },
+  // Aliya - Pending KPI 2
+  {
+    title: "Lead Generation Initiative",
+    description: "Identify and contact 50 potential new leads.",
+    target: "50 qualified leads",
+    targetValue: 50,
+    progress: "10 leads identified",
+    progressNumber: 10,
+    startDate: new Date("2025-06-15"),
+    dueDate: new Date("2025-07-05"),
+    status: "In Progress",
+    approvalstat: "Pending",
+    assignedTo: new mongoose.Types.ObjectId("6659fa9fb6e1c2cf81e362b5"),
   },
 ];
 

@@ -10,7 +10,7 @@ const kpiSchema = new mongoose.Schema({
   startDate: { type: Date, required: true },
   dueDate: { type: Date, required: true },
   status: { type: String, enum: ['Not Started', 'In Progress', 'Completed'], required: true },
-  approvalstat: { type: String, enum: ['Pending Approval', 'Approved', 'Rejected', 'No New Progress'], required: true },
+  approvalstat: { type: String, enum: ['Pending', 'Approved', 'Rejected'], required: true },
   assignedTo: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
   progressUpdates: [
     {
@@ -27,5 +27,8 @@ const kpiSchema = new mongoose.Schema({
     }
   ]
 });
-
-module.exports = mongoose.model('Kpi', kpiSchema);
+// --- CHANGE THIS PART ---
+// Instead of directly exporting mongoose.model('Kpi', kpiSchema),
+// check if the model already exists.
+module.exports = mongoose.models.Kpi || mongoose.model('Kpi', kpiSchema);
+// --- END CHANGE ---

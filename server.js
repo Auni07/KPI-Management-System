@@ -11,9 +11,11 @@ const port = process.env.PORT || 3000;
 const User = require("./models/user");
 const KPI = require("./models/kpi");
 
-// Enable CORS for all routes and origins
-// Without this, browser security policies (CORS) would block cross-origin requests
-app.use(cors());
+app.use(cors()); // <--- This line should be early in your server.js
+app.use(express.json({ extended: false })); // This is for parsing JSON request bodies
+
+// Define Routes
+app.use('/api/kpis', require('./routes/kpiRoutes'));
 
 // Connect DB
 mongoose.connect(process.env.MONGO_URI || "mongodb://localhost:27017/kpi_system")
@@ -37,9 +39,14 @@ app.use(session({
   saveUninitialized: false
 }));
 
+
 // Routes
 app.use('/api/dashboard', require('./routes/dashboardRoutes'));
-app.use('/api/kpi', require('./routes/kpiRoutes'));
+//app.use('/api/kpis', require('./routes/kpiRoutes'));
+
+// Define API Routes
+app.use('/api/kpis', require('./routes/kpiRoutes'));
+app.use('/api', require('./routes/userRoutes')); 
 
 // Load staff KPI routes
 const kpiStaffRoutes = require("./routes/kpi-staff");

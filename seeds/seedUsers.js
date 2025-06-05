@@ -1,5 +1,5 @@
 const mongoose = require("mongoose");
-const User = require("../models/User"); // assuming you have User model
+const User = require("../models/user"); // assuming you have User model
 
 mongoose.connect("mongodb://localhost:27017/kpi_system");
 

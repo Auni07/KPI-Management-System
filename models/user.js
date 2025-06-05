@@ -11,4 +11,6 @@ const userSchema = new mongoose.Schema({
   department: { type: String, enum: ['Sales & Marketing', 'HR & Admin', 'IT', 'Customer Service', 'Account & Finance', null], default: null },
 });
 
-module.exports = mongoose.model('User', userSchema);
+// --- CHANGE THIS PART ---
+module.exports = mongoose.models.User || mongoose.model('User', userSchema);
+// --- END CHANGE ---
