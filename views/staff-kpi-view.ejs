@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>My KPI</title>
+    <link rel="icon" href="/logo.png" />
+
+    <!-- Bootstrap 5 CSS -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+
+    <!-- FontAwesome for icons -->
+    <link
+      href="https://scdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+
+    <!-- External CSS file for custom styles -->
+    <link rel="stylesheet" href="/style.css" />
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/js/bootstrap.bundle.min.js"></script>
+  </head>
+
+  <body>
+    <button class="menu-toggle-btn d-md-none" type="button" id="sidebarToggle">
+      ☰
+    </button>
+
+    <div class="container-fluid">
+      <div class="row">
+        <!-- Sidebar -->
+        <nav class="d-md-block sidebar" id="sidebarMenu">
+          <div class="sidebar-sticky p-3">
+            <img
+              src="/logo.png"
+              alt="KPI System Logo"
+              class="img-fluid mb-4"
+              style="max-width: 120px"
+            />
+            <ul class="nav flex-column">
+              <li class="nav-item">
+                <a class="nav-link" href="/dashboard">
+                  <i class="fas fa-home"></i>
+                  <span class="menu-text">Dashboard</span>
+                </a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link active" href="/kpi/view">
+                  <i class="fas fa-tasks"></i>
+                  <span class="menu-text">My KPI</span>
+                </a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="notifications.html">
+                  <i class="fas fa-comments"></i>
+                  <span class="menu-text">Notifications</span>
+                </a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="user-profile.html">
+                  <i class="fas fa-user"></i>
+                  <span class="menu-text">Profile</span>
+                </a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="user-logout.html">
+                  <i class="fas fa-sign-out-alt"></i>
+                  <span class="menu-text">Logout</span>
+                </a>
+              </li>
+            </ul>
+          </div>
+        </nav>
+
+        <%
+          function getStatusBadgeClass(status) {
+            switch (status) {
+              case "In Progress":
+                return "bg-primary text-light";
+              case "Completed":
+                return "bg-success text-light";
+              case "Not Started":
+                return "bg-secondary text-light";
+              case "Rejected":
+                return "bg-danger text-light";
+              default:
+                return "bg-secondary text-light";
+            }
+          }
+
+            let totalKpiCount = kpis.length;
+            let inProgressCount = 0;
+            let completedCount = 0;
+            let notStartedCount = 0;
+            let pendingApprovalCount = 0;
+
+            kpis.forEach(kpi => {
+              if (kpi.status === 'In Progress') inProgressCount++;
+              if (kpi.status === 'Completed') completedCount++;
+              if (kpi.status === 'Not Started') notStartedCount++;
+              if (kpi.approvalstat === 'Pending Approval') pendingApprovalCount++;
+            });
+
+            // Create an object to hold KPI counts by week (Monday to Sunday)
+            let kpiCountsByWeek = {};
+
+            kpis.forEach(kpi => {
+              let startDate = new Date(kpi.startDate);
+
+              // Get week start date (Monday)
+              let day = startDate.getDay(); // 0=Sun, 1=Mon, 2=Tue,...
+              let diffToMonday = startDate.getDate() - day + (day === 0 ? -6 : 1);
+              let monday = new Date(startDate.setDate(diffToMonday));
+              monday.setHours(0,0,0,0);
+
+              let weekKey = monday.toISOString().split('T')[0]; // e.g. '2025-06-02'
+
+              // Increment count for that week
+              kpiCountsByWeek[weekKey] = (kpiCountsByWeek[weekKey] || 0) + 1;
+            });
+
+            // Convert to sorted arrays for chart labels and data
+            let sortedWeeks = Object.keys(kpiCountsByWeek).sort();
+            let kpiCounts = sortedWeeks.map(week => kpiCountsByWeek[week]);
+        %>
+
+        <!-- Main Content -->
+        <main class="col-12 col-md-10 px-4" id="main-content">
+          <div id="kpiAlertContainer"></div>
+
+          <h1 class="mt-4 ms-1">My KPI</h1>
+
+          <!-- Overall Progress Chart -->
+
+          <div class="row mt-4">
+            <div class="col-md-4">
+              <div class="card" style="height: 480px">
+                <h5 class="text-teal p-3">Overall Progress</h5>
+                <div class="card-body p-4">
+                  <canvas id="kpiProgressChart"></canvas>
+                </div>
+              </div>
+            </div>
+
+            <!-- Area Chart -->
+            <div class="col-md-6">
+              <div class="card shadow-sm" style="height: 480px">
+                <h5 class="text-teal p-3">Task Progress</h5>
+                <div class="card-body p-4 pt-5">
+                  <canvas id="kpiAreaChart"></canvas>
+                </div>
+              </div>
+            </div>
+          </div>
+          <br />
+
+          <!-- Chart.js CDN -->
+          <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+          <!-- KPI Stats Overview Cards (Horizontal) -->
+          <div class="row row-cols-1 row-cols-md-5 g-3 mb-4">
+            <div class="col">
+              <div class="card h-100 shadow-sm custom-kpi-card">
+                <div class="card-body d-flex align-items-center">
+                  <div class="me-3">
+                    <span class="badge bg-primary p-2">
+                      <i class="fas fa-tasks fa-lg text-white"></i>
+                    </span>
+                  </div>
+                  <div>
+                    <h6 class="card-title mb-1">Total KPI</h6>
+                    <h5 class="mb-0" id="totalKpiCount">
+                      <%= totalKpiCount %>
+                    </h5>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="col">
+              <div class="card h-100 shadow-sm custom-kpi-card">
+                <div class="card-body d-flex align-items-center">
+                  <div class="me-3">
+                    <span class="badge bg-warning p-2">
+                      <i class="far fa-clock fa-lg text-white"></i>
+                    </span>
+                  </div>
+                  <div>
+                    <h6 class="card-title mb-1">In Progress</h6>
+                    <h5 class="mb-0" id="inProgressCount">
+                      <%= inProgressCount %>
+                    </h5>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="col">
+              <div class="card h-100 shadow-sm custom-kpi-card">
+                <div class="card-body d-flex align-items-center">
+                  <div class="me-3">
+                    <span class="badge bg-success p-2">
+                      <i class="fas fa-check-circle fa-lg text-white"></i>
+                    </span>
+                  </div>
+                  <div>
+                    <h6 class="card-title mb-1">Completed</h6>
+                    <h5 class="mb-0" id="completedCount">
+                      <%= completedCount %>
+                    </h5>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="col">
+              <div class="card h-100 shadow-sm custom-kpi-card">
+                <div class="card-body d-flex align-items-center">
+                  <div class="me-3">
+                    <span class="badge bg-secondary p-2">
+                      <i class="fas fa-pause-circle fa-lg text-white"></i>
+                    </span>
+                  </div>
+                  <div>
+                    <h6 class="card-title mb-1">Not Started</h6>
+                    <h5 class="mb-0" id="notStartedCount">
+                      <%= notStartedCount %>
+                    </h5>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="col">
+              <div class="card h-100 shadow-sm custom-kpi-card">
+                <div class="card-body d-flex align-items-center">
+                  <div class="me-3">
+                    <span class="badge bg-info p-2">
+                      <i class="fas fa-hourglass-half fa-lg text-white"></i>
+                    </span>
+                  </div>
+                  <div>
+                    <h6 class="card-title mb-1">Pending Approval</h6>
+                    <h5 class="mb-0" id="pendingApprovalCount">
+                      <%= pendingApprovalCount %>
+                    </h5>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <br />
+
+          <!-- KPI Block List -->
+          <div id="KPIupdateanchor">
+            <h1 class="mt-1 ms-1">KPI List</h1>
+
+            <!-- Filter Box -->
+            <div class="d-flex mb-3 mt-3">
+              <select id="statusFilter" class="form-select w-auto shadow-sm">
+                <option value="All">All</option>
+                <option value="Completed">Completed</option>
+                <option value="In Progress">In Progress</option>
+                <option value="Not Started">Not Started</option>
+              </select>
+            </div>
+
+            <!-- KPI Block Display -->
+            <div
+              class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4"
+              id="kpiCardsContainerStaff"
+            >
+              <% if (kpis.length === 0) { %>
+              <p>No KPIs assigned to you.</p>
+              <% } else { %> <% kpis.forEach(kpi => { let completion =
+              (kpi.targetNumber > 0) ? ((kpi.progressNumber / kpi.targetNumber)
+              * 100).toFixed(2) : 0; %>
+              <div class="col" data-status="<%= kpi.status %>">
+                <div class="card h-100 shadow-sm custom-kpi-card">
+                  <div class="card-body d-flex flex-column">
+                    <h5 class="card-title mb-3">
+                      <a
+                        href="/staff/kpi-detail/<%= kpi._id %>"
+                        class="text-decoration-none card-title"
+                      >
+                        <%= kpi.title %>
+                      </a>
+                    </h5>
+
+                    <p class="mb-3">
+                      <strong>Target:</strong> <%= kpi.target %>
+                    </p>
+                    <p class="mb-3">
+                      <strong>Progress:</strong> <%= kpi.progress %>
+                    </p>
+                    <p class="mb-3">
+                      <strong>Due Date:</strong> <%=
+                      kpi.dueDate.toLocaleDateString('en-GB', { day: 'numeric',
+                      month: 'long', year: 'numeric' }) %>
+                    </p>
+                    <p class="mb-3">
+                      <strong>Approval Status:</strong> <%= kpi.approvalstat %>
+                    </p>
+
+                    <div class="mb-3">
+                      <strong>Status:</strong>
+                      <span
+                        class="badge <%= getStatusBadgeClass(kpi.status) %>"
+                      >
+                        <%= kpi.status %>
+                      </span>
+                    </div>
+
+                    <div class="mb-4">
+                      <p class="mb-2">
+                        <strong>Percentage Completion:</strong> <%= completion
+                        %>%
+                      </p>
+                      <div class="progress" style="height: 20px">
+                        <div
+                          class="progress-bar btn-success"
+                          role="progressbar"
+                          style="width: <%= completion %>%"
+                          aria-valuenow="<%= parseFloat(kpi.progress) %>"
+                          aria-valuemin="0"
+                          aria-valuemax="100"
+                        ></div>
+                      </div>
+                    </div>
+
+                    <div class="mt-auto text-end">
+                      <% if (kpi.approvalstat === "Pending Approval") { %>
+                      <span
+                        class="text-secondary small me-2"
+                        style="font-size: 18px"
+                        >Pending approval from Manager</span
+                      >
+                      <% } else if (kpi.status === "Completed") { %>
+                      <span
+                        class="text-secondary small me-2"
+                        style="font-size: 18px"
+                        >Task completed</span
+                      >
+                      <% } else { %>
+                      <a
+                        href="/kpi/update/<%= kpi._id %>"
+                        class="btn btn-warning btn-sm"
+                        >Update Progress</a
+                      >
+                      <% } %>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <% }); %> <% } %>
+            </div>
+          </div>
+        </main>
+      </div>
+    </div>
+
+    <div id="sidebarOverlay" class="sidebar-overlay"></div>
+
+    <!-- Status Filter Box Script -->
+    <script>
+      document
+        .getElementById("statusFilter")
+        .addEventListener("change", function () {
+          const selectedStatus = this.value;
+          const cards = document.querySelectorAll(
+            "#kpiCardsContainerStaff .col"
+          );
+
+          cards.forEach((card) => {
+            const cardStatus = card.getAttribute("data-status");
+
+            if (selectedStatus === "All" || cardStatus === selectedStatus) {
+              card.style.display = "block";
+            } else {
+              card.style.display = "none";
+            }
+          });
+        });
+    </script>
+
+    <!-- Chart Display Script -->
+    <script>
+      // Extract KPI data from EJS
+      const kpis = <%- JSON.stringify(kpis) %>;
+
+      // --- Doughnut Chart Data (Overall Progress) ---
+      const total = kpis.length || 1; // avoid division by zero
+
+      let completedCount = 0;
+      let inProgressCount = 0;
+      let notStartedCount = 0;
+
+      kpis.forEach(kpi => {
+        switch (kpi.status) {
+          case 'Completed':
+            completedCount++;
+            break;
+          case 'In Progress':
+            inProgressCount++;
+            break;
+          case 'Not Started':
+            notStartedCount++;
+            break;
+        }
+      });
+
+      const completedPercentage = ((completedCount / total) * 100).toFixed(2);
+      const inProgressPercentage = ((inProgressCount / total) * 100).toFixed(2);
+      const notStartedPercentage = ((notStartedCount / total) * 100).toFixed(2);
+
+      const ctx = document.getElementById("kpiProgressChart").getContext("2d");
+
+      const kpiProgressChart = new Chart(ctx, {
+        type: "doughnut",
+        data: {
+          labels: ["Completed", "In Progress", "Not Started"],
+          datasets: [
+            {
+              data: [
+                completedPercentage,
+                inProgressPercentage,
+                notStartedPercentage
+              ],
+              backgroundColor: ["#28a745", "#ffc107", "#dee2e6", "#6c757d"],
+              borderWidth: 1,
+            },
+          ],
+        },
+        options: {
+          cutout: "70%",
+          plugins: {
+            legend: {
+              display: true,
+              position: "bottom",
+            },
+            tooltip: {
+              callbacks: {
+                label: function (context) {
+                  return context.label + ": " + context.raw + "%";
+                },
+              },
+            },
+          },
+        },
+      });
+
+      // --- Area Chart Data (Weekly Progress for Completed and In Progress) ---
+      let completedKpisByWeek = {};
+      let inProgressKpisByWeek = {};
+      let allWeekKeys = new Set(); // To collect all unique week keys
+
+      kpis.forEach(kpi => {
+        let startDate = new Date(kpi.startDate);
+
+        // Get week start date (Monday)
+        let day = startDate.getDay(); // 0=Sun, 1=Mon, 2=Tue,...
+        let diffToMonday = startDate.getDate() - day + (day === 0 ? -6 : 1);
+        let monday = new Date(startDate.setDate(diffToMonday));
+        monday.setHours(0, 0, 0, 0);
+
+        let weekKey = monday.toISOString().split('T')[0]; // e.g. '2025-06-02'
+        allWeekKeys.add(weekKey); // Add to the set of all weeks
+
+        if (kpi.status === 'Completed') {
+          completedKpisByWeek[weekKey] = (completedKpisByWeek[weekKey] || 0) + 1;
+        } else if (kpi.status === 'In Progress') {
+          inProgressKpisByWeek[weekKey] = (inProgressKpisByWeek[weekKey] || 0) + 1;
+        }
+      });
+
+      // Convert to sorted arrays for chart labels and data, ensuring all weeks are present
+      let sortedWeeks = Array.from(allWeekKeys).sort();
+
+      let completedCounts = sortedWeeks.map(week => completedKpisByWeek[week] || 0);
+      let inProgressCounts = sortedWeeks.map(week => inProgressKpisByWeek[week] || 0);
+
+      // Format labels for better display (e.g., "Jun 2")
+      const formattedWeekLabels = sortedWeeks.map(weekKey => {
+        const date = new Date(weekKey);
+        const options = { month: 'short', day: 'numeric' };
+        return date.toLocaleDateString('en-US', options); // Adjust locale if needed
+      });
+
+      const areaCtx = document.getElementById("kpiAreaChart").getContext("2d");
+      new Chart(areaCtx, {
+        type: "line",
+        data: {
+          labels: formattedWeekLabels, // Use the formatted week labels
+          datasets: [
+            {
+              label: "Completed Tasks",
+              data: completedCounts,
+              fill: true,
+              backgroundColor: "rgba(40, 167, 69, 0.2)", // Green for completed
+              borderColor: "rgba(40, 167, 69, 1)",
+              tension: 0.3,
+              pointBackgroundColor: "rgba(40, 167, 69, 1)",
+              pointRadius: 5,
+            },
+            {
+              label: "In Progress Tasks",
+              data: inProgressCounts,
+              fill: true,
+              backgroundColor: "rgba(255, 193, 7, 0.2)", // Yellow for in progress
+              borderColor: "rgba(255, 193, 7, 1)",
+              tension: 0.3,
+              pointBackgroundColor: "rgba(255, 193, 7, 1)",
+              pointRadius: 5,
+            }
+          ],
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            legend: {
+              display: true, // Show legend for multiple datasets
+              position: "bottom",
+            },
+            tooltip: {
+              enabled: true,
+              mode: 'index', // Show tooltips for all datasets at a given index
+              intersect: false,
+            },
+          },
+          scales: {
+            x: {
+              type: 'category', // Use 'category' for discrete labels like weeks
+              labels: formattedWeekLabels, // Ensure x-axis uses the labels
+              title: {
+                display: true,
+                text: 'Week Starting Date'
+              }
+            },
+            y: {
+              beginAtZero: true,
+              ticks: {
+                stepSize: 1, // Ensure whole numbers for counts
+              },
+              title: {
+                display: true,
+                text: 'Number of Tasks'
+              }
+            },
+          },
+        },
+      });
+    </script>
+  </body>
+</html>
