@@ -48,6 +48,10 @@ app.use('/api/dashboard', require('./routes/dashboardRoutes'));
 app.use('/api/kpis', require('./routes/kpiRoutes'));
 app.use('/api', require('./routes/userRoutes')); 
 
+// Simple root route
+app.get('/', (req, res) => res.send('API Running'));
+
+
 // Load staff KPI routes
 const kpiStaffRoutes = require("./routes/kpi-staff");
 app.use("/kpi", kpiStaffRoutes);

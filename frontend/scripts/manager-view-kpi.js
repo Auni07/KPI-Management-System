@@ -109,7 +109,7 @@ function renderCards(kpis) {
             <p class="card-text"><strong>Staff:</strong> ${kpi.assignedTo ? kpi.assignedTo.name : 'Unassigned'}</p>
             <p class="card-text"><strong>Department:</strong> ${kpi.assignedTo ? kpi.assignedTo.department : 'N/A'}</p>
             <p class="card-text"><strong>Target:</strong> ${kpi.targetValue}</p>
-            <p class="card-text"><strong>Current:</strong> ${kpi.progressNumber}</p>
+            <p class="card-text"><strong>CurrentProgress:</strong> ${kpi.progressNumber}</p>
             <p class="card-text"><strong>Due Date:</strong> ${new Date(kpi.dueDate).toLocaleDateString()}</p>
             <p class="card-text"><strong>Indicators:</strong> ${kpi.target}</p>
             <p class="card-text"><strong>Progress:</strong> ${progressText}</p>

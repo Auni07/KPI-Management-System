@@ -37,11 +37,9 @@ router.put('/:id', async (req, res) => {
 
 // NEW: GET all KPIs with optional filters (delegated to controller) FOR VIEW ASSIGNED KPI MANAGER
 router.get('/', kpiController.getKpis);
-
-// NEW: POST create a new KPI (delegated to controller)
-router.post('/', kpiController.createKpi);
-
-// NEW: DELETE a KPI by ID (delegated to controller)
-router.delete('/:id', kpiController.deleteKpi);
+router.post('/', kpiController.createKpi); // POST new KPI
+router.get('/:id', kpiController.getKpiById); // GET KPI by ID
+router.put('/:id', kpiController.updateKpi); // UPDATE KPI by ID
+router.delete('/:id', kpiController.deleteKpi); // DELETE KPI by ID
 
 module.exports = router;

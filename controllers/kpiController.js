@@ -130,7 +130,7 @@ exports.createKpi = async (req, res) => {
       startDate,
       dueDate,
       status, // Progress Status (Not Started, In Progress, Completed)
-      approvalstat, // Approval Status (Pending Approval, Approved, Rejected, No New Progress)
+      approvalstat, // Approval Status (Pending, Approved, Rejected, No New Progress)
       assignedTo // User's ObjectId
     });
 
@@ -222,6 +222,132 @@ exports.deleteKpi = async (req, res) => {
     console.error(err.message);
     if (err.kind === 'ObjectId') {
       return res.status(400).json({ msg: 'Invalid KPI ID' });
+    }
+    res.status(500).send('Server Error');
+  }
+};
+// --- NEW CRUD Functions for Assign KPI Form ---
+
+// @route   POST /api/kpis
+// @desc    Create a new KPI
+// @access  Manager
+exports.createKpi = async (req, res) => {
+  const { title, description, staffName, targetValue, department, dueDate, performanceIndicator } = req.body;
+
+  try {
+    // 1. Find the assigned staff member by name (case-insensitive)
+    const assignedStaff = await User.findOne({ name: new RegExp(staffName, 'i'), role: 'staff' });
+
+    if (!assignedStaff) {
+      return res.status(404).json({ msg: 'Assigned staff member not found. Please ensure the staff name is correct and exist as a staff user.' });
+    }
+
+    // 2. Create the new KPI object
+    const newKpi = new Kpi({
+      title,
+      description,
+      target: performanceIndicator, // Map frontend 'performanceIndicator' to backend 'target'
+      targetValue,
+      dueDate: new Date(dueDate), // Ensure date is correctly parsed
+      assignedTo: assignedStaff._id, // Use the staff's ObjectId
+      status: 'Not Started', // Default status for newly assigned KPI
+      progressNumber: 0,
+      approvalstat: 'Pending', // Default approval status for new KPI
+      // department: department // No need to store department in KPI directly if referencing User
+    });
+
+    // 3. Save the KPI to the database
+    const kpi = await newKpi.save();
+    res.status(201).json(kpi); // 201 Created
+  } catch (err) {
+    console.error(err.message);
+    if (err.name === 'ValidationError') {
+        const messages = Object.values(err.errors).map(val => val.message);
+        return res.status(400).json({ msg: `Validation Error: ${messages.join(', ')}` });
+    }
+    res.status(500).send('Server Error during KPI creation');
+  }
+};
+
+// @route   GET /api/kpis/:id
+// @desc    Get KPI by ID
+// @access  Public (or Manager/Staff specific if needed)
+exports.getKpiById = async (req, res) => {
+  try {
+    const kpi = await Kpi.findById(req.params.id).populate('assignedTo', 'name email department');
+    if (!kpi) {
+      return res.status(404).json({ msg: 'KPI not found' });
+    }
+    res.json(kpi);
+  } catch (err) {
+    console.error(err.message);
+    if (err.kind === 'ObjectId') { // Handle invalid Object ID format
+      return res.status(400).json({ msg: 'KPI not found (Invalid ID format)' });
+    }
+    res.status(500).send('Server Error');
+  }
+};
+
+// @route   PUT /api/kpis/:id
+// @desc    Update a KPI by ID
+// @access  Manager
+exports.updateKpi = async (req, res) => {
+  const { title, description, staffName, targetValue, dueDate, performanceIndicator, status, progressNumber, approvalstat, evidence } = req.body;
+
+  try {
+    let kpi = await Kpi.findById(req.params.id);
+
+    if (!kpi) {
+      return res.status(404).json({ msg: 'KPI not found' });
+    }
+
+    // If staffName is provided, find the new assignedTo user
+    if (staffName) {
+      const newAssignedStaff = await User.findOne({ name: new RegExp(staffName, 'i'), role: 'staff' });
+      if (!newAssignedStaff) {
+        return res.status(404).json({ msg: 'New assigned staff member not found.' });
+      }
+      kpi.assignedTo = newAssignedStaff._id;
+    }
+
+    // Update fields if they are provided in the request body
+    if (title) kpi.title = title;
+    if (description) kpi.description = description;
+    if (targetValue) kpi.targetValue = targetValue;
+    if (dueDate) kpi.dueDate = new Date(dueDate);
+    if (performanceIndicator) kpi.target = performanceIndicator; // Map back
+    if (status) kpi.status = status;
+    if (typeof progressNumber !== 'undefined') kpi.progressNumber = progressNumber; // Allow 0
+    if (approvalstat) kpi.approvalstat = approvalstat;
+    if (evidence) kpi.evidence = evidence; // Assuming evidence is an array of strings
+
+    await kpi.save();
+    res.json(kpi);
+  } catch (err) {
+    console.error(err.message);
+    if (err.kind === 'ObjectId') {
+      return res.status(400).json({ msg: 'KPI not found (Invalid ID format)' });
+    }
+    res.status(500).send('Server Error');
+  }
+};
+
+// @route   DELETE /api/kpis/:id
+// @desc    Delete a KPI by ID
+// @access  Manager
+exports.deleteKpi = async (req, res) => {
+  try {
+    const kpi = await Kpi.findByIdAndDelete(req.params.id); // Use findByIdAndDelete for simplicity
+
+    if (!kpi) {
+      return res.status(404).json({ msg: 'KPI not found' });
+    }
+
+    res.json({ msg: 'KPI removed' });
+  } catch (err) {
+    console.error(err.message);
+    if (err.kind === 'ObjectId') {
+      return res.status(400).json({ msg: 'KPI not found (Invalid ID format)' });
     }
     res.status(500).send('Server Error');
   }
