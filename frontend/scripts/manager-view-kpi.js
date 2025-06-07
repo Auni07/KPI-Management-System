@@ -69,32 +69,28 @@ function renderCards(kpis) {
     const card = document.createElement("div");
     card.className = "col-md-6 col-lg-4 mb-4";
 
-    // Determine the progress percentage based on the kpi.status field
-    let progressPercentage = 0;
+    // Automatically set status to "Completed" if progressNumber equals targetValue
     let progressText = "";
-    switch (kpi.status?.toLowerCase()) { // Changed from kpi.progressStatus to kpi.status based on schema
-      case "completed":
-        progressPercentage = 100;
-        progressText = "Completed";
-        break;
-      case "in progress":
-        // You can make this dynamic if you have a current/target value for status as well
-        // For now, a fixed 50% for 'In Progress'
-        progressPercentage = (kpi.progressNumber / kpi.targetValue) * 100;
-        if (isNaN(progressPercentage) || !isFinite(progressPercentage)) {
-          progressPercentage = 0; // Handle division by zero or invalid numbers
-        }
-        progressText = "In Progress";
-        break;
-      case "not started":
+    let progressPercentage = 0;
+
+    if (kpi.progressNumber === kpi.targetValue) {
+      progressText = "Completed";
+      progressPercentage = 100;
+    } else if (kpi.progressNumber > 0 && kpi.progressNumber < kpi.targetValue) {
+      progressText = "In Progress";
+      progressPercentage = (kpi.progressNumber / kpi.targetValue) * 100;
+      if (isNaN(progressPercentage) || !isFinite(progressPercentage)) {
         progressPercentage = 0;
-        progressText = "Not Started";
-        break;
-      default:
-        progressPercentage = 0;
-        progressText = "N/A"; // Or handle as an unknown status
+      }
+    } else if (kpi.progressNumber === 0) {
+      progressText = "Not Started";
+      progressPercentage = 0;
+    } else {
+      progressText = "N/A";
+      progressPercentage = 0;
     }
-    progressPercentage = Math.round(progressPercentage); // Round for display
+
+    progressPercentage = Math.round(progressPercentage);
 
     card.innerHTML = `
       <div class="card h-100 shadow-sm">
@@ -117,10 +113,10 @@ function renderCards(kpis) {
               <div class="progress-bar" role="progressbar" aria-valuenow="${progressPercentage}" aria-valuemin="0" aria-valuemax="100" style="width: ${progressPercentage}%;"></div>
             </div>
           </div>
-          <div class="mt-3 d-flex justify-content-between align-items-center">
-            ${kpi.approvalstat?.toLowerCase() === "pending"
-              ? `<a href="manager-view-evidence.html?id=${kpi._id}" class="btn btn-sm btn-outline-primary">Review</a>`
-              : `<span></span>`
+          <div class="mt-3 d-flex align-items-center">
+            ${kpi.approvalstat === "Pending Approval"
+              ? `<a href="manager-view-evidence.html?id=${kpi._id}" class="btn btn-sm btn-outline-primary me-auto">Review</a>`
+              : `<span class="me-auto"></span>`
             }
             <span class="badge bg-${getStatusColor(kpi.approvalstat)}">${kpi.approvalstat}</span>
           </div>

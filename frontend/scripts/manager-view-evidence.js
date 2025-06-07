@@ -1,9 +1,10 @@
 document.addEventListener("DOMContentLoaded", async () => {
-  const kpiId = '684134be135126b9fd4f79b5'; // TEMPORARY ID
+  const urlParams = new URLSearchParams(window.location.search);
+  const kpiId = urlParams.get('id');
   let kpi;  // make kpi accessible in multiple places
 
   try {
-    const response = await fetch('http://localhost:3000/api/kpi/' + kpiId);
+    const response = await fetch('http://localhost:3000/api/kpis/' + kpiId);
     if (!response.ok) throw new Error('Failed to fetch KPI');
 
     kpi = await response.json();
@@ -71,7 +72,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
       // Send updated KPI to server
       try {console.log('Sending updated KPI:', kpi);
-        const response = await fetch(`http://localhost:3000/api/kpi/${kpi._id}`, {
+        const response = await fetch(`http://localhost:3000/api/kpis/${kpi._id}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(kpi),
@@ -86,19 +87,34 @@ document.addEventListener("DOMContentLoaded", async () => {
   });
 
   // Approve button functionality
-  document.getElementById("Btn-Approve").addEventListener("click", function () {
-    kpi.status = "Approved";  // Change the KPI's status to "Approved"
-    
-    // Find the index of the KPI in the kpis array
-    const index = kpis.findIndex(k => k.id === kpiId);
-    if (index !== -1) {
-      kpis[index] = kpi;  // Update the KPI in the kpis array
-      localStorage.setItem("kpis", JSON.stringify(kpis));  // Save the updated kpis array back to localStorage
-    }
+  document.getElementById("Btn-Approve").addEventListener("click", async () => {
+  if (!kpi || !kpi._id) {
+    alert("KPI data not loaded.");
+    return;
+  }
 
-    // Redirect to another page
+  // Update the approvalstat field in the kpi object
+  kpi.approvalstat = "Approved";
+
+  try {
+    const response = await fetch(`http://localhost:3000/api/kpis/${kpi._id}`, {
+      method: "PUT",  // or PATCH depending on your backend
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ approvalstat: kpi.approvalstat }),
+    });
+
+    if (!response.ok) throw new Error("Failed to update approval status");
+
+    alert("KPI approved successfully!");
+    // Redirect to the assigned KPI list page
     window.location.href = "manager-view-assigned-kpi.html";
-  });
+  } catch (error) {
+    console.error(error);
+    alert("Could not approve KPI. Please try again.");
+  }
+});
 
   // Reject button functionality
   document.getElementById("Btn-Reject").addEventListener("click", function () {
