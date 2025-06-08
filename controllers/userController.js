@@ -100,7 +100,7 @@ exports.getUserProfile = async (req, res) => {
 // @route   PUT /api/profile
 // @desc    Update the profile of the logged-in user
 // @access  Private
-exports.updateUserProfile = async (req, res) => {
+exports.updateUser  = async (req, res) => {
   const { username, email } = req.body;
 
   try {

@@ -13,13 +13,12 @@ router.get('/staff', protect, userController.getAllStaff);
 router.get('/profile', protect, userController.getUserProfile);
 
 // 保护路由：更新用户资料
-router.put('/profile', protect, userController.updateUserProfile);
+router.put('/profile', protect, userController.updateUser);
 
 // 保护路由：修改密码
 router.put('/change-password', protect, userController.changePassword);
 
-// 保护路由：停用账户
-router.put('/deactivate', protect, userController.deactivateAccount);
+
 
 // 保护路由：删除 Staff 账户（只有 Manager 可以删除）
 router.delete('/delete-staff/:id', protect, userController.deleteStaffAccount);
