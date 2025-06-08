@@ -4,17 +4,15 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>KPI Management System</title>
-    <link rel="icon" href="../assets/images/logo.png" />
+    <link rel="icon" href="/assets/images/logo.png" />
 
-    <!-- Bootstrap 5 CSS -->
     <link
       href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/css/bootstrap.min.css"
       rel="stylesheet"
     />
 
-    <!-- FontAwesome for icons -->
     <link
-      href="https://scdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css"
       rel="stylesheet"
     />
     <link
@@ -22,16 +20,11 @@
       rel="stylesheet"
     />
     <link
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css"
-      rel="stylesheet"
-    />
-    <link
       href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap"
       rel="stylesheet"
     />
 
-    <!-- External CSS file for custom styles -->
-    <link rel="stylesheet" href="../styles/style.css" />
+    <link rel="stylesheet" href="/styles/style.css" />
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   </head>
@@ -43,24 +36,23 @@
 
     <div class="container-fluid">
       <div class="row">
-        <!-- Sidebar -->
         <nav class="d-md-block sidebar" id="sidebarMenu">
           <div class="sidebar-sticky p-3">
             <img
-              src="../assets/images/logo.png"
+              src="/assets/images/logo.png"
               alt="KPI System Logo"
               class="img-fluid mb-4"
               style="max-width: 120px"
             />
             <ul class="nav flex-column" id="sidebarLinks">
-              <!-- Menu items will be dynamically inserted here -->
-            </ul>
+              </ul>
           </div>
         </nav>
 
-        <!-- Main Content -->
         <main class="col-12 col-md-10 px-4" id="main-content">
           <h1 class="mt-4 ms-1 mb-2">KPI Progress Update</h1>
+          <div id="kpiAlertContainer"></div>
+
 
           <div class="card mb-4">
             <div class="card-body">
@@ -82,8 +74,6 @@
               </p>
               <p><strong>Due Date:</strong> <span id="kpiDueDate"></span></p>
               <p><strong>Status:</strong> <span id="kpiStatus"></span></p>
-
-              <!-- Update Progress Form -->
 
               <h5 class="mb-3 text-teal">
                 <i class="fas fa-edit me-2 text-teal"></i>Update Your KPI
@@ -171,37 +161,126 @@
       </div>
     </div>
 
+    <div id="sidebarOverlay" class="sidebar-overlay"></div>
+
+    <script type="module" src="/scripts/render-sidebar.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/js/bootstrap.bundle.min.js"></script>
+
     <script>
-      document
-        .getElementById("updateForm")
-        .addEventListener("submit", function (e) {
-          e.preventDefault();
+      // Function to calculate completion percentage
+      function calculateCompletionPercentage(progress, target) {
+        const parsedProgress = parseFloat(progress);
+        const parsedTarget = parseFloat(target);
 
-          // Collect values
-          const progressInput = document
-            .getElementById("progressInput")
-            .value.trim();
-          const progressNote = document
-            .getElementById("progressNote")
-            .value.trim();
-          const fileUpload = document.getElementById("fileUpload").value.trim();
-          const fileNote = document.getElementById("fileNote").value.trim();
+        if (isNaN(parsedProgress) || isNaN(parsedTarget) || parsedTarget === 0) {
+          return "0%";
+        }
+        const completion = (parsedProgress / parsedTarget) * 100;
+        return `${Math.min(100, Math.round(completion * 100) / 100)}%`; // Cap at 100% and round to 2 decimals
+      }
 
-          // Check if any field is empty
-          if (!progressInput || !progressNote || !fileUpload || !fileNote) {
-            alert("⚠️ Please fill all the details before submitting.");
+      // Function to display alerts
+      function showAlert(message, type = "success") {
+        const alertContainer = document.getElementById("kpiAlertContainer");
+        const alertBox = document.createElement("div");
+        alertBox.className = `alert alert-${type} alert-dismissible fade show shadow-sm mt-3`;
+        alertBox.role = "alert";
+        alertBox.innerHTML = `
+          ${message}
+          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        `;
+        alertContainer.prepend(alertBox);
+
+        setTimeout(() => {
+          bootstrap.Alert.getInstance(alertBox)?.close(); // Safely close Bootstrap alert
+        }, 5000); // Alert disappears after 5 seconds
+      }
+
+
+      document.addEventListener("DOMContentLoaded", async () => {
+        const urlParams = new URLSearchParams(window.location.search);
+        const kpiId = urlParams.get("id"); // Get KPI ID from URL
+
+        if (!kpiId) {
+          showAlert("Error: KPI ID not found in URL.", "danger");
+          return;
+        }
+
+        try {
+          // Fetch KPI details from your API
+          const response = await fetch(`/kpi/api/kpis/${kpiId}`);
+          if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(
+              errorData.message || `HTTP error! Status: ${response.status}`
+            );
+          }
+          const data = await response.json();
+          const kpi = data.kpi;
+
+          if (!kpi) {
+            showAlert("Error: KPI data not found.", "danger");
             return;
           }
 
-          // When submission is successful:
-          localStorage.setItem("kpiSubmitted", "true");
-          window.location.href = "staff-view-kpi.html";
-        });
+          // Populate KPI details
+          document.getElementById("kpiTitle").textContent = kpi.title;
+          document.getElementById("kpiDescription").textContent = kpi.description || "N/A";
+          document.getElementById("kpiTarget").textContent = kpi.target || "N/A";
+          document.getElementById("kpiProgress").textContent = kpi.progress || "0";
+          document.getElementById("kpiCompletion").textContent = calculateCompletionPercentage(kpi.progressNumber, kpi.targetValue);
+          document.getElementById("kpiStartDate").textContent = kpi.startDate ? new Date(kpi.startDate).toLocaleDateString() : "N/A";
+          document.getElementById("kpiDueDate").textContent = kpi.dueDate ? new Date(kpi.dueDate).toLocaleDateString() : "N/A";
+          document.getElementById("kpiStatus").textContent = kpi.status;
+
+          // Add event listener for form submission
+          document.getElementById("updateForm").addEventListener("submit", async function (e) {
+            e.preventDefault();
+
+            const progressInput = document.getElementById("progressInput").value.trim();
+            const progressNote = document.getElementById("progressNote").value.trim();
+            const fileInput = document.getElementById("fileUpload"); // Get the file input element
+            const fileNote = document.getElementById("fileNote").value.trim();
+
+            if (!progressInput || !progressNote || !fileInput.files.length || !fileNote) {
+              showAlert("⚠️ Please fill all the details before submitting.", "warning");
+              return;
+            }
+
+            const formData = new FormData();
+            formData.append("progressInput", progressInput);
+            formData.append("progressNote", progressNote);
+            formData.append("fileNote", fileNote);
+            formData.append("fileUpload", fileInput.files[0]); // Append the actual file
+
+            try {
+              const updateResponse = await fetch(`/kpi/update/${kpiId}`, {
+                method: "POST",
+                body: formData, // Use FormData for file uploads
+              });
+
+              if (!updateResponse.ok) {
+                const errorData = await updateResponse.json();
+                throw new Error(
+                  errorData.message || `HTTP error! Status: ${updateResponse.status}`
+                );
+              }
+
+              localStorage.setItem("kpiSubmitted", "true"); // Set flag for success message
+              window.location.href = "staff-view-kpi.html"; // Redirect to main view
+            } catch (error) {
+              console.error("Error submitting KPI update:", error);
+              showAlert(`Failed to submit update: ${error.message}`, "danger");
+            }
+          });
+
+        } catch (error) {
+          console.error("Error fetching KPI details:", error);
+          showAlert(`Failed to load KPI details. Error: ${error.message}`, "danger");
+          // Optionally hide the form if details cannot be loaded
+          document.getElementById("updateFormCard").style.display = 'none';
+        }
+      });
     </script>
-
-    <div id="sidebarOverlay" class="sidebar-overlay"></div>
-
-    <script type="module" src="../scripts/render-sidebar.js"></script>
-    <script src="../scripts/staff-view-kpi.js"></script>
   </body>
 </html>

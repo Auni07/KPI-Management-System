@@ -4,17 +4,15 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>My KPI</title>
-    <link rel="icon" href="../assets/images/logo.png" />
+    <link rel="icon" href="/assets/images/logo.png" />
 
-    <!-- Bootstrap 5 CSS -->
     <link
       href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/css/bootstrap.min.css"
       rel="stylesheet"
     />
 
-    <!-- FontAwesome for icons -->
     <link
-      href="https://scdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css"
       rel="stylesheet"
     />
     <link
@@ -22,16 +20,11 @@
       rel="stylesheet"
     />
     <link
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css"
-      rel="stylesheet"
-    />
-    <link
       href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap"
       rel="stylesheet"
     />
 
-    <!-- External CSS file for custom styles -->
-    <link rel="stylesheet" href="../styles/style.css" />
+    <link rel="stylesheet" href="/styles/style.css" />
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/js/bootstrap.bundle.min.js"></script>
@@ -44,28 +37,22 @@
 
     <div class="container-fluid">
       <div class="row">
-        <!-- Sidebar -->
         <nav class="d-md-block sidebar" id="sidebarMenu">
           <div class="sidebar-sticky p-3">
             <img
-              src="../assets/images/logo.png"
+              src="/assets/images/logo.png"
               alt="KPI System Logo"
               class="img-fluid mb-4"
               style="max-width: 120px"
             />
-            <ul class="nav flex-column" id="sidebarLinks">
-              <!-- Menu items will be dynamically inserted here -->
-            </ul>
+            <ul class="nav flex-column" id="sidebarLinks"></ul>
           </div>
         </nav>
 
-        <!-- Main Content -->
         <main class="col-12 col-md-10 px-4" id="main-content">
           <div id="kpiAlertContainer"></div>
 
           <h1 class="mt-4 ms-1">My KPI</h1>
-          <!-- Overall Progress Chart -->
-
           <div class="row mt-4">
             <div class="col-md-4">
               <div class="card" style="height: 460px">
@@ -76,7 +63,6 @@
               </div>
             </div>
 
-            <!-- Area Chart -->
             <div class="col-md-6">
               <div class="card shadow-sm" style="height: 460px">
                 <div class="card-body">
@@ -88,10 +74,8 @@
           </div>
           <br />
 
-          <!-- Chart.js CDN -->
-          <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
           <script>
+            // Chart initialization (will be updated with dynamic data later)
             const ctx = document
               .getElementById("kpiProgressChart")
               .getContext("2d");
@@ -101,7 +85,7 @@
                 labels: ["Completed", "In Progress", "Not Started"],
                 datasets: [
                   {
-                    data: [59.12, 20.88, 20], // 59.12% completed example
+                    data: [0, 0, 0], // Placeholder data, will be updated
                     backgroundColor: ["#28a745", "#ffc107", "#dee2e6"],
                     borderWidth: 1,
                   },
@@ -125,24 +109,18 @@
               },
             });
 
-            // Area Chart
             const areaCtx = document
               .getElementById("kpiAreaChart")
               .getContext("2d");
-            new Chart(areaCtx, {
+            const kpiAreaChart = new Chart(areaCtx, {
+              // Store chart instance
               type: "line",
               data: {
-                labels: [
-                  "Jan 2025",
-                  "Feb 2025",
-                  "March 2025",
-                  "April 2025",
-                  "May 2025",
-                ],
+                labels: [], // Placeholder for months
                 datasets: [
                   {
                     label: "Completed Tasks",
-                    data: [2, 4, 5, 7, 8],
+                    data: [], // Placeholder for monthly completed tasks
                     fill: true,
                     backgroundColor: "rgba(25, 135, 84, 0.2)",
                     borderColor: "rgba(25, 135, 84, 1)",
@@ -174,7 +152,6 @@
             });
           </script>
 
-          <!-- KPI Stats Overview Cards (Horizontal) -->
           <div class="row row-cols-1 row-cols-md-5 g-3 mb-4">
             <div class="col">
               <div class="card h-100 shadow-sm custom-kpi-card">
@@ -259,11 +236,9 @@
 
           <br />
 
-          <!-- KPI Block List -->
           <div id="KPIupdateanchor">
             <h1 class="mt-1 ms-1">KPI List</h1>
 
-            <!-- Filter Box -->
             <div class="d-flex mb-3 mt-3">
               <select id="statusFilter" class="form-select w-auto shadow-sm">
                 <option value="All">All</option>
@@ -276,7 +251,9 @@
             <div
               class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-5"
               id="kpiCardsContainerStaff"
-            ></div>
+            >
+              <p class="text-center w-100">Loading KPIs...</p>
+            </div>
           </div>
         </main>
       </div>
@@ -284,12 +261,272 @@
 
     <div id="sidebarOverlay" class="sidebar-overlay"></div>
 
-    <script src="../scripts/staff-view-main.js"></script>
-    <script type="module" src="../scripts/render-sidebar.js"></script>
-    <script src="../scripts/sample-staff-kpi.js"></script>
-
     <script>
-      window.addEventListener("DOMContentLoaded", () => {
+      // Function to calculate percentage completion
+      function calculateCompletionPercentage(progress, target) {
+        const parsedProgress = parseFloat(progress);
+        const parsedTarget = parseFloat(target);
+
+        if (
+          isNaN(parsedProgress) ||
+          isNaN(parsedTarget) ||
+          parsedTarget === 0
+        ) {
+          return "0%";
+        }
+        const completion = (parsedProgress / parsedTarget) * 100;
+        return `${Math.min(100, Math.round(completion * 100) / 100)}%`; // Cap at 100% and round to 2 decimals
+      }
+
+      function getApprovalBadgeClass(status) {
+        switch (status) {
+          case "Pending":
+            return "bg-warning text-dark";
+          case "Approved":
+            return "bg-success text-light";
+          case "Rejected":
+            return "bg-danger text-light";
+          default:
+            return "bg-secondary text-light";
+        }
+      }
+
+      function getStatusBadgeClass(status) {
+        switch (status) {
+          case "Not Started":
+            return "bg-secondary text-light"; // Grey
+          case "Completed":
+            return "bg-success text-light"; // Green
+          case "In Progress":
+            return "bg-warning text-dark"; // Yellow
+          default:
+            return "bg-secondary text-light"; // Default to grey if status is unknown
+        }
+      }
+
+      // Function to update the overview cards (Total, In Progress, Completed, Not Started, Pending Approval)
+      function updateKpiOverview(kpis) {
+        const totalKPI = kpis.length;
+        const completed = kpis.filter(
+          (kpi) => kpi.status === "Completed"
+        ).length;
+        const inProgress = kpis.filter(
+          (kpi) => kpi.status === "In Progress"
+        ).length;
+        const notStarted = kpis.filter(
+          (kpi) => kpi.status === "Not Started"
+        ).length;
+        const pendingApproval = kpis.filter(
+          (kpi) => kpi.approvalstat === "Pending"
+        ).length;
+
+        document.getElementById("totalKpiCount").textContent = totalKPI;
+        document.getElementById("inProgressCount").textContent = inProgress;
+        document.getElementById("completedCount").textContent = completed;
+        document.getElementById("notStartedCount").textContent = notStarted;
+        document.getElementById("pendingApprovalCount").textContent =
+          pendingApproval;
+
+        // Update Doughnut Chart
+        const completedPercentage =
+          totalKPI > 0 ? (completed / totalKPI) * 100 : 0;
+        const inProgressPercentage =
+          totalKPI > 0 ? (inProgress / totalKPI) * 100 : 0;
+        const notStartedPercentage =
+          totalKPI > 0 ? (notStarted / totalKPI) * 100 : 0;
+
+        kpiProgressChart.data.datasets[0].data = [
+          completedPercentage,
+          inProgressPercentage,
+          notStartedPercentage,
+        ];
+        kpiProgressChart.update();
+      }
+
+      // Function to update the monthly progress chart
+      function updateMonthlyProgressChart(kpis) {
+  const weeklyCompletedCounts = {};
+  const weeklyInProgressCounts = {};
+  const allWeeks = new Set(); // To collect all unique weeks
+
+  kpis.forEach((kpi) => {
+    const dueDate = new Date(kpi.dueDate);
+    // Get the start of the week (Sunday)
+    const startOfWeek = new Date(dueDate);
+    startOfWeek.setDate(dueDate.getDate() - dueDate.getDay()); // Sunday is 0
+    startOfWeek.setHours(0, 0, 0, 0);
+
+    const weekKey = `${startOfWeek.getFullYear()}-${(startOfWeek.getMonth() + 1).toString().padStart(2, '0')}-${startOfWeek.getDate().toString().padStart(2, '0')}`;
+    allWeeks.add(weekKey);
+
+    if (kpi.status === "Completed") {
+      weeklyCompletedCounts[weekKey] = (weeklyCompletedCounts[weekKey] || 0) + 1;
+    } else if (kpi.status === "In Progress") {
+      weeklyInProgressCounts[weekKey] = (weeklyInProgressCounts[weekKey] || 0) + 1;
+    }
+  });
+
+  const sortedWeeks = Array.from(allWeeks).sort((a, b) => {
+    const dateA = new Date(a);
+    const dateB = new Date(b);
+    return dateA - dateB;
+  });
+
+  let cumulativeCompleted = 0;
+  const cumulativeCompletedData = sortedWeeks.map((week) => {
+    cumulativeCompleted += weeklyCompletedCounts[week] || 0;
+    return cumulativeCompleted;
+  });
+
+  let cumulativeInProgress = 0;
+  const cumulativeInProgressData = sortedWeeks.map((week) => {
+    cumulativeInProgress += weeklyInProgressCounts[week] || 0;
+    return cumulativeInProgress;
+  });
+
+  // Format labels for display (e.g., "Jun 2 - Jun 8")
+  const formattedLabels = sortedWeeks.map((weekKey) => {
+    const startOfWeek = new Date(weekKey);
+    const endOfWeek = new Date(startOfWeek);
+    endOfWeek.setDate(startOfWeek.getDate() + 6); // End of the week (Saturday)
+
+    const startMonth = startOfWeek.toLocaleString('default', { month: 'short' });
+    const startDate = startOfWeek.getDate();
+    const endMonth = endOfWeek.toLocaleString('default', { month: 'short' });
+    const endDate = endOfWeek.getDate();
+
+    return `${startMonth} ${startDate} - ${endMonth} ${endDate}`;
+  });
+
+  kpiAreaChart.data.labels = formattedLabels;
+  kpiAreaChart.data.datasets = [
+    {
+      label: "Cumulative Completed Tasks",
+      data: cumulativeCompletedData,
+      fill: true,
+      backgroundColor: "rgba(25, 135, 84, 0.2)", // Green for completed
+      borderColor: "rgba(25, 135, 84, 1)",
+      tension: 0.3,
+      pointBackgroundColor: "rgba(25, 135, 84, 1)",
+      pointRadius: 5,
+    },
+    {
+      label: "Cumulative In Progress Tasks",
+      data: cumulativeInProgressData,
+      fill: true,
+      backgroundColor: "rgba(255, 193, 7, 0.2)", // Yellow for in progress
+      borderColor: "rgba(255, 193, 7, 1)",
+      tension: 0.3,
+      pointBackgroundColor: "rgba(255, 193, 7, 1)",
+      pointRadius: 5,
+    },
+  ];
+  kpiAreaChart.update();
+}
+
+      // Function to render KPI cards based on filtered data
+      const kpiCardsContainerStaff = document.getElementById(
+        "kpiCardsContainerStaff"
+      );
+      function renderKPICards(kpisToRender) {
+        kpiCardsContainerStaff.innerHTML = ""; // Clear existing cards
+
+        if (kpisToRender.length === 0) {
+          kpiCardsContainerStaff.innerHTML =
+            '<p class="text-center w-100">No KPIs found for this status.</p>';
+          return;
+        }
+
+        kpisToRender.forEach((kpi) => {
+          // Use kpi.progressNumber and kpi.targetValue for calculations
+          const currentProgress = kpi.progressNumber || 0;
+          const targetValue = kpi.targetValue || 0;
+          const completionPercentage = calculateCompletionPercentage(
+            currentProgress,
+            targetValue
+          );
+
+          let buttonAreaContent = "";
+          // Check if status is "Completed" OR approvalstat is "Pending"
+          if (kpi.status === "Completed" || kpi.approvalstat === "Pending") {
+            // Prioritize "Pending Approval" message if applicable
+            if (kpi.approvalstat === "Pending") {
+              buttonAreaContent = `
+          <p class="text-secondary mb-0 small text-end">Pending approval from Manager</p>
+        `;
+            } else if (kpi.status === "Completed") {
+              buttonAreaContent = `
+          <p class="text-success mb-0 small text-end">Progress completed</p>
+        `;
+            }
+            // You could add an else-if here if you want a specific message for other "Completed" but not "Pending" scenarios
+          } else {
+            buttonAreaContent = `
+        <a href="/kpi/update/${kpi._id}" class="btn btn-warning btn-sm">Update Progress</a>
+      `;
+          }
+
+          const card = document.createElement("div");
+          card.className = "col";
+          card.innerHTML = `
+            <div class="card h-100 shadow-sm">
+              <div class="card-body d-flex flex-column">
+                <h5 class="card-title mb-3">
+                  <a href="staff-kpi-detail.html?id=${
+                    kpi._id
+                  }" class="text-decoration-none card-title">
+                    ${kpi.title || "Unnamed KPI"}
+                  </a>
+                </h5>
+                <p class="mb-3"><strong>Target:</strong> ${
+                  kpi.target || "N/A"
+                } </p>
+                <p class="mb-3"><strong>Progress:</strong> ${
+                  kpi.progress || "0"
+                } </p>
+                <p class="mb-3">
+  <strong>Status:</strong>
+  <span class="small-badge badge ${getStatusBadgeClass(kpi.status)}">
+    ${kpi.status || "Not Started"}
+  </span>
+</p>
+
+                <div class="mb-3">
+                  <strong>Approval Status:</strong>
+                  ${kpi.approvalstat || "N/A"}
+                </div>
+
+                <div class="mb-4">
+                  <p class="mb-3"><strong>Percentage Completion:</strong> ${completionPercentage}</p>
+                  <div class="progress" style="height: 20px">
+                    <div
+                      class="progress-bar bg-success"
+                      role="progressbar"
+                      style="width: ${completionPercentage}"
+                      aria-valuenow="${parseFloat(completionPercentage)}"
+                      aria-valuemin="0"
+                      aria-valuemax="100"
+                    >
+                      ${completionPercentage}
+                    </div>
+                  </div>
+                </div>
+
+                <div class="mt-auto text-end">
+            ${buttonAreaContent}
+          </div>
+              </div>
+            </div>
+          `;
+          kpiCardsContainerStaff.appendChild(card);
+        });
+      }
+
+      let allKpis = []; // Store all fetched KPIs globally
+
+      // Main data fetching and rendering logic
+      document.addEventListener("DOMContentLoaded", async () => {
+        // Display submission success alert if redirected
         if (localStorage.getItem("kpiSubmitted") === "true") {
           const alertContainer = document.getElementById("kpiAlertContainer");
           const alertBox = document.createElement("div");
@@ -297,22 +534,67 @@
             "alert alert-success alert-dismissible fade show shadow-sm";
           alertBox.role = "alert";
           alertBox.innerHTML = `
-          Your KPI progress update has been submitted for approval. Thank you.
-          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        `;
+            Your KPI progress update has been submitted for approval. Thank you.
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+          `;
           alertContainer.prepend(alertBox);
 
-          // Auto-dismiss after 5 seconds
           setTimeout(() => {
-            alertBox.classList.remove("show"); // fade it out
-            alertBox.classList.add("fade"); // optional fade effect
-            setTimeout(() => alertBox.remove(), 500); // remove from DOM after fade
+            alertBox.classList.remove("show");
+            setTimeout(() => alertBox.remove(), 500);
           }, 5000);
 
-          // Remove the flag after showing
           localStorage.removeItem("kpiSubmitted");
         }
+
+        try {
+          // Fetch KPIs from the backend API
+          const response = await fetch("/kpi/api/kpi-staff");
+          if (!response.ok) {
+            // Handle HTTP errors
+            const errorData = await response.json();
+            throw new Error(
+              errorData.message || `HTTP error! Status: ${response.status}`
+            );
+          }
+          const data = await response.json();
+          allKpis = data.kpis; // Store fetched KPIs
+
+          if (!allKpis || allKpis.length === 0) {
+            kpiCardsContainerStaff.innerHTML =
+              '<p class="text-center w-100">No KPIs found for you.</p>';
+            updateKpiOverview([]); // Update overview with empty data
+            updateMonthlyProgressChart([]); // Update monthly chart with empty data
+            return;
+          }
+
+          // Initial render of all KPIs and update overview stats
+          renderKPICards(allKpis);
+          updateKpiOverview(allKpis);
+          updateMonthlyProgressChart(allKpis); // Update monthly chart based on fetched data
+        } catch (error) {
+          console.error("Error fetching KPIs:", error);
+          kpiCardsContainerStaff.innerHTML = `<p class="text-center w-100 text-danger">Failed to load KPIs. Please try again. Error: ${error.message}</p>`;
+          // Reset charts and overview if data fetch fails
+          updateKpiOverview([]);
+          updateMonthlyProgressChart([]);
+        }
+      });
+
+      // Filter functionality
+      const statusFilter = document.getElementById("statusFilter");
+      statusFilter.addEventListener("change", () => {
+        const filterStatus = statusFilter.value;
+        const filteredKpis =
+          filterStatus === "All"
+            ? allKpis
+            : allKpis.filter((kpi) => kpi.status === filterStatus); // Filter by the 'status' field from your backend
+
+        renderKPICards(filteredKpis);
       });
     </script>
+
+    <script src="/scripts/staff-view-main.js"></script>
+    <script type="module" src="/scripts/render-sidebar.js"></script>
   </body>
 </html>

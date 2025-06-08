@@ -7,15 +7,15 @@ const cors = require('cors');
 const app = express();
 const port = process.env.PORT || 3000;
 
+// Serve static files from the 'styles' directory
+app.use(express.static(path.join(__dirname, 'frontend')));
+
 // Models
 const User = require("./models/user");
 const KPI = require("./models/kpi");
 
 app.use(cors()); // <--- This line should be early in your server.js
 app.use(express.json({ extended: false })); // This is for parsing JSON request bodies
-
-// Define Routes
-app.use('/api/kpis', require('./routes/kpiRoutes'));
 
 // Connect DB
 mongoose.connect(process.env.MONGO_URI || "mongodb://localhost:27017/kpi_system")
@@ -39,21 +39,15 @@ app.use(session({
   saveUninitialized: false
 }));
 
-
 // Routes
 app.use('/api/dashboard', require('./routes/dashboardRoutes'));
-//app.use('/api/kpis', require('./routes/kpiRoutes'));
 
 // Define API Routes
 app.use('/api/kpis', require('./routes/kpiRoutes'));
 app.use('/api', require('./routes/userRoutes')); 
 
-// Simple root route
-app.get('/', (req, res) => res.send('API Running'));
-
-
 // Load staff KPI routes
-const kpiStaffRoutes = require("./routes/kpi-staff");
+const kpiStaffRoutes = require("./routes/kpiStaffRoutes");
 app.use("/kpi", kpiStaffRoutes);
 
 app.get("/", (req, res) => {
@@ -77,7 +71,7 @@ app.post("/login", async (req, res) => {
       role: user.role,
       name: user.name,
     };
-    res.redirect("/api/dashboard");
+    res.redirect("/dashboard");
   } else {
     res.send("Login failed");
   }
