@@ -199,17 +199,20 @@
       }
 
       document.addEventListener("DOMContentLoaded", async () => {
-        const urlParams = new URLSearchParams(window.location.search);
-        const kpiId = urlParams.get("id"); // Get KPI ID from URL
+        // Get KPI ID from the URL path, not query parameters
+        const pathSegments = window.location.pathname.split("/");
+        // Assuming URL is /kpi/update/:id, the ID will be the last segment
+        const kpiId = pathSegments[pathSegments.length - 1];
 
         if (!kpiId) {
-          showAlert("Error: KPI ID not found in URL.", "danger");
+          showAlert("Error: KPI ID not found in URL path.", "danger");
           return;
         }
 
         try {
-          // Fetch KPI details from your API
-          const response = await fetch(`/kpi/api/kpis/${kpiId}`);
+          // Fetch specific KPI details from your API
+          // Changed from `/kpi/api/kpis/${kpiId}` to `/kpi/api/kpi-staff/${kpiId}`
+          const response = await fetch(`/kpi/api/kpi-staff/${kpiId}`);
           if (!response.ok) {
             const errorData = await response.json();
             throw new Error(
@@ -291,7 +294,7 @@
                 }
 
                 localStorage.setItem("kpiSubmitted", "true"); // Set flag for success message
-                window.location.href = "staff-view-kpi.html"; // Redirect to main view
+                window.location.href = "/kpi/view"; // Redirect to staff-view-kpi.html (your view page)
               } catch (error) {
                 console.error("Error submitting KPI update:", error);
                 showAlert(
