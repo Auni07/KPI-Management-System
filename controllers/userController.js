@@ -1,17 +1,188 @@
-// controllers/userController.js
 const User = require('../models/user');
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
+
+// @route   POST /api/register
+// @desc    Register a new user
+// @access  Public
+exports.registerUser = async (req, res) => {
+  const { name, email, password, role, companyId, department } = req.body;
+
+  try {
+    const userExists = await User.findOne({ email });
+    if (userExists) {
+      return res.status(400).json({ message: 'User already exists' });
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const user = new User({
+      name,
+      email,
+      password: hashedPassword,
+      role,
+      companyId,
+      department,
+    });
+
+    await user.save();
+
+    const token = user.generateAuthToken();
+    const userWithoutPassword = { ...user._doc };
+    delete userWithoutPassword.password;
+
+    res.status(201).json({ token, user: userWithoutPassword });
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Server Error');
+  }
+};
+
+// @route   POST /api/login
+// @desc    Login user and get token
+// @access  Public
+exports.loginUser = async (req, res) => {
+  const { email, password } = req.body;
+
+  try {
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(400).json({ message: 'Invalid credentials' });
+    }
+
+    console.log('DB encrypted password:', user.password);
+console.log('User input password:', password);
+
+const isMatch = await bcrypt.compare(password, user.password);
+console.log('Password match:', isMatch);
+
+
+    console.log('Password match:', isMatch);
+
+    if (!isMatch) {
+      return res.status(401).json({ message: 'Invalid credentials' });
+    }
+
+    const token = user.generateAuthToken();
+    const userWithoutPassword = { ...user._doc };
+    delete userWithoutPassword.password;
+
+    res.status(200).json({ token, user: userWithoutPassword });
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Server Error');
+  }
+};
+
+
+// @route   POST /api/logout
+// @desc    Logout user (client clears token)
+// @access  Private
+exports.logoutUser = (req, res) => {
+  res.status(200).json({ message: 'Logged out successfully' });
+};
+
+// @route   GET /api/profile
+// @desc    Get the profile of the logged-in user
+// @access  Private
+exports.getUserProfile = async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id).select('-password');
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+    res.status(200).json(user);
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Server Error');
+  }
+};
+
+// @route   PUT /api/profile
+// @desc    Update the profile of the logged-in user
+// @access  Private
+exports.updateUserProfile = async (req, res) => {
+  const { username, email } = req.body;
+
+  try {
+    const user = await User.findByIdAndUpdate(
+      req.user.id,
+      { username, email },
+      { new: true }
+    ).select('-password');
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+    res.status(200).json(user);
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Server Error');
+  }
+};
+
+// @route   PUT /api/change-password
+// @desc    Change the password of the logged-in user
+// @access  Private
+exports.changePassword = async (req, res) => {
+  const { oldPassword, newPassword } = req.body;
+
+  try {
+    const user = await User.findById(req.user.id);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    const isMatch = await bcrypt.compare(oldPassword, user.password);
+    if (!isMatch) {
+      return res.status(400).json({ message: 'Incorrect old password' });
+    }
+
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    user.password = hashedPassword;
+    await user.save();
+
+    res.status(200).json({ message: 'Password updated successfully' });
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Server Error');
+  }
+};
+
+
+
+// @route   DELETE /api/delete-staff/:id
+// @desc    Delete a staff account (only Manager can delete)
+// @access  Private (Manager only)
+exports.deleteStaffAccount = async (req, res) => {
+  try {
+    const userToDelete = await User.findById(req.params.id);
+    if (!userToDelete) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    if (req.user.role !== 'Manager') {
+      return res.status(403).json({ message: 'Permission denied. Only Managers can delete Staff accounts.' });
+    }
+
+    if (userToDelete._id.toString() === req.user.id) {
+      return res.status(400).json({ message: 'You cannot delete your own account.' });
+    }
+
+    await userToDelete.remove();
+    res.status(200).json({ message: 'Staff account deleted successfully' });
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Server Error');
+  }
+};
 
 // @route   GET /api/departments
 // @desc    Get unique departments from users
-// @access  Public (for now, can add auth later)
+// @access  Public
 exports.getUniqueDepartments = async (req, res) => {
   try {
-    // Find all users who have a department field that is not null or an empty string
-    // and then extract only the unique department values.
     const departments = await User.distinct('department', {
-      department: { $ne: null, $ne: '' } // Exclude null and empty strings
+      department: { $nin: [null, ''] }
     });
-    // Optional: Sort departments alphabetically
     res.json(departments.sort());
   } catch (err) {
     console.error(err.message);
@@ -19,10 +190,12 @@ exports.getUniqueDepartments = async (req, res) => {
   }
 };
 
-// ... (getAllStaff function remains the same) ...
+// @route   GET /api/staff
+// @desc    Get all staff
+// @access  Private (Manager or Admin only)
 exports.getAllStaff = async (req, res) => {
   try {
-    const staff = await User.find({ role: 'staff' }).select('_id name email department');
+    const staff = await User.find({ role: 'Staff' }).select('_id username email department');
     res.json(staff);
   } catch (err) {
     console.error(err.message);
