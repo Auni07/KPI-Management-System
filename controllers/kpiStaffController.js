@@ -29,7 +29,13 @@ exports.viewKpisHtml = async (req, res) => {
     const kpis = await KPI.find({ assignedTo: userId }).lean();
     const user = await User.findById(userId).populate("manager").lean();
 
-    const filePath = path.join(__dirname, "..", "frontend", "pages", "staff-view-kpi.html");
+    const filePath = path.join(
+      __dirname,
+      "..",
+      "frontend",
+      "pages",
+      "staff-view-kpi.html"
+    );
     await fs.access(filePath); // Check if file exists
     res.sendFile(filePath); // Send the HTML file
   } catch (err) {
@@ -53,7 +59,13 @@ exports.getKpiUpdateFormHtml = async (req, res) => {
     }
 
     // Serve the HTML file that will then fetch KPI data via an API call
-    const filePath = path.join(__dirname, "..", "frontend", "pages", "staff-kpi-detail.html");
+    const filePath = path.join(
+      __dirname,
+      "..",
+      "frontend",
+      "pages",
+      "staff-kpi-detail.html"
+    );
     await fs.access(filePath); // Check if file exists
     res.sendFile(filePath); // Send the HTML file
   } catch (err) {
@@ -81,7 +93,11 @@ exports.updateKpiProgress = async (req, res) => {
     if (!kpi) {
       // If KPI not found, respond with 404 and remove any uploaded file
       if (filePath) {
-        await fs.unlink(filePath).catch(fileErr => console.error("Error deleting temp file:", fileErr));
+        await fs
+          .unlink(filePath)
+          .catch((fileErr) =>
+            console.error("Error deleting temp file:", fileErr)
+          );
       }
       return res.status(404).json({ message: "KPI not found." });
     }
@@ -90,9 +106,17 @@ exports.updateKpiProgress = async (req, res) => {
     if (kpi.assignedTo.toString() !== req.session.user._id.toString()) {
       // If forbidden, respond with 403 and remove any uploaded file
       if (filePath) {
-        await fs.unlink(filePath).catch(fileErr => console.error("Error deleting temp file:", fileErr));
+        await fs
+          .unlink(filePath)
+          .catch((fileErr) =>
+            console.error("Error deleting temp file:", fileErr)
+          );
       }
-      return res.status(403).json({ message: "Forbidden: You do not have permission to update this KPI." });
+      return res
+        .status(403)
+        .json({
+          message: "Forbidden: You do not have permission to update this KPI.",
+        });
     }
 
     let newProgressNumber = kpi.progressNumber;
@@ -142,20 +166,37 @@ exports.updateKpiProgress = async (req, res) => {
       { new: true, runValidators: true } // `new: true` returns the updated document, `runValidators: true` ensures schema validations run
     );
 
-    res.status(200).json({ message: "KPI progress updated successfully and pending approval." });
+    res
+      .status(200)
+      .json({
+        message: "KPI progress updated successfully and pending approval.",
+      });
   } catch (err) {
     console.error("Error updating KPI progress:", err);
     // Remove the uploaded file if a server error occurred during DB update
     if (filePath) {
-      await fs.unlink(filePath).catch(fileErr => console.error("Error deleting uploaded file:", fileErr));
+      await fs
+        .unlink(filePath)
+        .catch((fileErr) =>
+          console.error("Error deleting uploaded file:", fileErr)
+        );
     }
     // Differentiate between Mongoose validation errors or other server errors
-    if (err.name === 'ValidationError') {
-        return res.status(400).json({ message: "Validation error: " + err.message, error: err });
-    } else if (err.name === 'CastError') {
-        return res.status(400).json({ message: "Invalid KPI ID format.", error: err });
+    if (err.name === "ValidationError") {
+      return res
+        .status(400)
+        .json({ message: "Validation error: " + err.message, error: err });
+    } else if (err.name === "CastError") {
+      return res
+        .status(400)
+        .json({ message: "Invalid KPI ID format.", error: err });
     }
-    res.status(500).json({ message: "Update failed. Please try again.", error: err.message });
+    res
+      .status(500)
+      .json({
+        message: "Update failed. Please try again.",
+        error: err.message,
+      });
   }
 };
 
@@ -200,7 +241,9 @@ exports.getSpecificKpiApi = async (req, res) => {
 
     // Security check: Ensure the KPI belongs to the logged-in user
     if (kpi.assignedTo.toString() !== req.session.user._id.toString()) {
-      return res.status(403).json({ message: "Forbidden: You do not have access to this KPI." });
+      return res
+        .status(403)
+        .json({ message: "Forbidden: You do not have access to this KPI." });
     }
 
     res.json({ kpi: kpi });

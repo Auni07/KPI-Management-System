@@ -345,84 +345,97 @@
 
       // Function to update the monthly progress chart
       function updateMonthlyProgressChart(kpis) {
-  const weeklyCompletedCounts = {};
-  const weeklyInProgressCounts = {};
-  const allWeeks = new Set(); // To collect all unique weeks
+        const weeklyCompletedCounts = {};
+        const weeklyInProgressCounts = {};
+        const allWeeks = new Set(); // To collect all unique weeks
 
-  kpis.forEach((kpi) => {
-    const dueDate = new Date(kpi.dueDate);
-    // Get the start of the week (Sunday)
-    const startOfWeek = new Date(dueDate);
-    startOfWeek.setDate(dueDate.getDate() - dueDate.getDay()); // Sunday is 0
-    startOfWeek.setHours(0, 0, 0, 0);
+        kpis.forEach((kpi) => {
+          const dueDate = new Date(kpi.dueDate);
+          // Get the start of the week (Sunday)
+          const startOfWeek = new Date(dueDate);
+          startOfWeek.setDate(dueDate.getDate() - dueDate.getDay()); // Sunday is 0
+          startOfWeek.setHours(0, 0, 0, 0);
 
-    const weekKey = `${startOfWeek.getFullYear()}-${(startOfWeek.getMonth() + 1).toString().padStart(2, '0')}-${startOfWeek.getDate().toString().padStart(2, '0')}`;
-    allWeeks.add(weekKey);
+          const weekKey = `${startOfWeek.getFullYear()}-${(
+            startOfWeek.getMonth() + 1
+          )
+            .toString()
+            .padStart(2, "0")}-${startOfWeek
+            .getDate()
+            .toString()
+            .padStart(2, "0")}`;
+          allWeeks.add(weekKey);
 
-    if (kpi.status === "Completed") {
-      weeklyCompletedCounts[weekKey] = (weeklyCompletedCounts[weekKey] || 0) + 1;
-    } else if (kpi.status === "In Progress") {
-      weeklyInProgressCounts[weekKey] = (weeklyInProgressCounts[weekKey] || 0) + 1;
-    }
-  });
+          if (kpi.status === "Completed") {
+            weeklyCompletedCounts[weekKey] =
+              (weeklyCompletedCounts[weekKey] || 0) + 1;
+          } else if (kpi.status === "In Progress") {
+            weeklyInProgressCounts[weekKey] =
+              (weeklyInProgressCounts[weekKey] || 0) + 1;
+          }
+        });
 
-  const sortedWeeks = Array.from(allWeeks).sort((a, b) => {
-    const dateA = new Date(a);
-    const dateB = new Date(b);
-    return dateA - dateB;
-  });
+        const sortedWeeks = Array.from(allWeeks).sort((a, b) => {
+          const dateA = new Date(a);
+          const dateB = new Date(b);
+          return dateA - dateB;
+        });
 
-  let cumulativeCompleted = 0;
-  const cumulativeCompletedData = sortedWeeks.map((week) => {
-    cumulativeCompleted += weeklyCompletedCounts[week] || 0;
-    return cumulativeCompleted;
-  });
+        let cumulativeCompleted = 0;
+        const cumulativeCompletedData = sortedWeeks.map((week) => {
+          cumulativeCompleted += weeklyCompletedCounts[week] || 0;
+          return cumulativeCompleted;
+        });
 
-  let cumulativeInProgress = 0;
-  const cumulativeInProgressData = sortedWeeks.map((week) => {
-    cumulativeInProgress += weeklyInProgressCounts[week] || 0;
-    return cumulativeInProgress;
-  });
+        let cumulativeInProgress = 0;
+        const cumulativeInProgressData = sortedWeeks.map((week) => {
+          cumulativeInProgress += weeklyInProgressCounts[week] || 0;
+          return cumulativeInProgress;
+        });
 
-  // Format labels for display (e.g., "Jun 2 - Jun 8")
-  const formattedLabels = sortedWeeks.map((weekKey) => {
-    const startOfWeek = new Date(weekKey);
-    const endOfWeek = new Date(startOfWeek);
-    endOfWeek.setDate(startOfWeek.getDate() + 6); // End of the week (Saturday)
+        // Format labels for display (e.g., "Jun 2 - Jun 8")
+        const formattedLabels = sortedWeeks.map((weekKey) => {
+          const startOfWeek = new Date(weekKey);
+          const endOfWeek = new Date(startOfWeek);
+          endOfWeek.setDate(startOfWeek.getDate() + 6); // End of the week (Saturday)
 
-    const startMonth = startOfWeek.toLocaleString('default', { month: 'short' });
-    const startDate = startOfWeek.getDate();
-    const endMonth = endOfWeek.toLocaleString('default', { month: 'short' });
-    const endDate = endOfWeek.getDate();
+          const startMonth = startOfWeek.toLocaleString("default", {
+            month: "short",
+          });
+          const startDate = startOfWeek.getDate();
+          const endMonth = endOfWeek.toLocaleString("default", {
+            month: "short",
+          });
+          const endDate = endOfWeek.getDate();
 
-    return `${startMonth} ${startDate} - ${endMonth} ${endDate}`;
-  });
+          return `${startMonth} ${startDate} - ${endMonth} ${endDate}`;
+        });
 
-  kpiAreaChart.data.labels = formattedLabels;
-  kpiAreaChart.data.datasets = [
-    {
-      label: "Cumulative Completed Tasks",
-      data: cumulativeCompletedData,
-      fill: true,
-      backgroundColor: "rgba(25, 135, 84, 0.2)", // Green for completed
-      borderColor: "rgba(25, 135, 84, 1)",
-      tension: 0.3,
-      pointBackgroundColor: "rgba(25, 135, 84, 1)",
-      pointRadius: 5,
-    },
-    {
-      label: "Cumulative In Progress Tasks",
-      data: cumulativeInProgressData,
-      fill: true,
-      backgroundColor: "rgba(255, 193, 7, 0.2)", // Yellow for in progress
-      borderColor: "rgba(255, 193, 7, 1)",
-      tension: 0.3,
-      pointBackgroundColor: "rgba(255, 193, 7, 1)",
-      pointRadius: 5,
-    },
-  ];
-  kpiAreaChart.update();
-}
+        kpiAreaChart.data.labels = formattedLabels;
+        kpiAreaChart.data.datasets = [
+          {
+            label: "Cumulative Completed Tasks",
+            data: cumulativeCompletedData,
+            fill: true,
+            backgroundColor: "rgba(25, 135, 84, 0.2)", // Green for completed
+            borderColor: "rgba(25, 135, 84, 1)",
+            tension: 0.3,
+            pointBackgroundColor: "rgba(25, 135, 84, 1)",
+            pointRadius: 5,
+          },
+          {
+            label: "Cumulative In Progress Tasks",
+            data: cumulativeInProgressData,
+            fill: true,
+            backgroundColor: "rgba(255, 193, 7, 0.2)", // Yellow for in progress
+            borderColor: "rgba(255, 193, 7, 1)",
+            tension: 0.3,
+            pointBackgroundColor: "rgba(255, 193, 7, 1)",
+            pointRadius: 5,
+          },
+        ];
+        kpiAreaChart.update();
+      }
 
       // Function to render KPI cards based on filtered data
       const kpiCardsContainerStaff = document.getElementById(
@@ -452,18 +465,18 @@
             // Prioritize "Pending Approval" message if applicable
             if (kpi.approvalstat === "Pending") {
               buttonAreaContent = `
-          <p class="text-secondary mb-0 small text-end">Pending approval from Manager</p>
-        `;
+            <p class="text-secondary mb-0 small text-end">Pending approval from Manager</p>
+            `;
             } else if (kpi.status === "Completed") {
               buttonAreaContent = `
-          <p class="text-success mb-0 small text-end">Progress completed</p>
-        `;
+            <p class="text-success mb-0 small text-end">Progress completed</p>
+            `;
             }
             // You could add an else-if here if you want a specific message for other "Completed" but not "Pending" scenarios
           } else {
             buttonAreaContent = `
-        <a href="/kpi/update/${kpi._id}" class="btn btn-warning btn-sm">Update Progress</a>
-      `;
+            <a href="/kpi/update/${kpi._id}" class="btn btn-warning btn-sm">Update Progress</a>
+          `;
           }
 
           const card = document.createElement("div");
@@ -484,12 +497,13 @@
                 <p class="mb-3"><strong>Progress:</strong> ${
                   kpi.progress || "0"
                 } </p>
-                <p class="mb-3">
-  <strong>Status:</strong>
-  <span class="small-badge badge ${getStatusBadgeClass(kpi.status)}">
-    ${kpi.status || "Not Started"}
-  </span>
-</p>
+                <p class="mb-3"><strong>Status:</strong>
+                <span class="small-badge badge ${getStatusBadgeClass(
+                  kpi.status
+                )}">
+                ${kpi.status || "Not Started"}
+                </span>
+                </p>
 
                 <div class="mb-3">
                   <strong>Approval Status:</strong>

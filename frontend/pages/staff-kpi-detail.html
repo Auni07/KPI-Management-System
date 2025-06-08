@@ -44,15 +44,13 @@
               class="img-fluid mb-4"
               style="max-width: 120px"
             />
-            <ul class="nav flex-column" id="sidebarLinks">
-              </ul>
+            <ul class="nav flex-column" id="sidebarLinks"></ul>
           </div>
         </nav>
 
         <main class="col-12 col-md-10 px-4" id="main-content">
           <h1 class="mt-4 ms-1 mb-2">KPI Progress Update</h1>
           <div id="kpiAlertContainer"></div>
-
 
           <div class="card mb-4">
             <div class="card-body">
@@ -172,7 +170,11 @@
         const parsedProgress = parseFloat(progress);
         const parsedTarget = parseFloat(target);
 
-        if (isNaN(parsedProgress) || isNaN(parsedTarget) || parsedTarget === 0) {
+        if (
+          isNaN(parsedProgress) ||
+          isNaN(parsedTarget) ||
+          parsedTarget === 0
+        ) {
           return "0%";
         }
         const completion = (parsedProgress / parsedTarget) * 100;
@@ -195,7 +197,6 @@
           bootstrap.Alert.getInstance(alertBox)?.close(); // Safely close Bootstrap alert
         }, 5000); // Alert disappears after 5 seconds
       }
-
 
       document.addEventListener("DOMContentLoaded", async () => {
         const urlParams = new URLSearchParams(window.location.search);
@@ -225,60 +226,88 @@
 
           // Populate KPI details
           document.getElementById("kpiTitle").textContent = kpi.title;
-          document.getElementById("kpiDescription").textContent = kpi.description || "N/A";
-          document.getElementById("kpiTarget").textContent = kpi.target || "N/A";
-          document.getElementById("kpiProgress").textContent = kpi.progress || "0";
-          document.getElementById("kpiCompletion").textContent = calculateCompletionPercentage(kpi.progressNumber, kpi.targetValue);
-          document.getElementById("kpiStartDate").textContent = kpi.startDate ? new Date(kpi.startDate).toLocaleDateString() : "N/A";
-          document.getElementById("kpiDueDate").textContent = kpi.dueDate ? new Date(kpi.dueDate).toLocaleDateString() : "N/A";
+          document.getElementById("kpiDescription").textContent =
+            kpi.description || "N/A";
+          document.getElementById("kpiTarget").textContent =
+            kpi.target || "N/A";
+          document.getElementById("kpiProgress").textContent =
+            kpi.progress || "0";
+          document.getElementById("kpiCompletion").textContent =
+            calculateCompletionPercentage(kpi.progressNumber, kpi.targetValue);
+          document.getElementById("kpiStartDate").textContent = kpi.startDate
+            ? new Date(kpi.startDate).toLocaleDateString()
+            : "N/A";
+          document.getElementById("kpiDueDate").textContent = kpi.dueDate
+            ? new Date(kpi.dueDate).toLocaleDateString()
+            : "N/A";
           document.getElementById("kpiStatus").textContent = kpi.status;
 
           // Add event listener for form submission
-          document.getElementById("updateForm").addEventListener("submit", async function (e) {
-            e.preventDefault();
+          document
+            .getElementById("updateForm")
+            .addEventListener("submit", async function (e) {
+              e.preventDefault();
 
-            const progressInput = document.getElementById("progressInput").value.trim();
-            const progressNote = document.getElementById("progressNote").value.trim();
-            const fileInput = document.getElementById("fileUpload"); // Get the file input element
-            const fileNote = document.getElementById("fileNote").value.trim();
+              const progressInput = document
+                .getElementById("progressInput")
+                .value.trim();
+              const progressNote = document
+                .getElementById("progressNote")
+                .value.trim();
+              const fileInput = document.getElementById("fileUpload"); // Get the file input element
+              const fileNote = document.getElementById("fileNote").value.trim();
 
-            if (!progressInput || !progressNote || !fileInput.files.length || !fileNote) {
-              showAlert("⚠️ Please fill all the details before submitting.", "warning");
-              return;
-            }
-
-            const formData = new FormData();
-            formData.append("progressInput", progressInput);
-            formData.append("progressNote", progressNote);
-            formData.append("fileNote", fileNote);
-            formData.append("fileUpload", fileInput.files[0]); // Append the actual file
-
-            try {
-              const updateResponse = await fetch(`/kpi/update/${kpiId}`, {
-                method: "POST",
-                body: formData, // Use FormData for file uploads
-              });
-
-              if (!updateResponse.ok) {
-                const errorData = await updateResponse.json();
-                throw new Error(
-                  errorData.message || `HTTP error! Status: ${updateResponse.status}`
+              if (
+                !progressInput ||
+                !progressNote ||
+                !fileInput.files.length ||
+                !fileNote
+              ) {
+                showAlert(
+                  "⚠️ Please fill all the details before submitting.",
+                  "warning"
                 );
+                return;
               }
 
-              localStorage.setItem("kpiSubmitted", "true"); // Set flag for success message
-              window.location.href = "staff-view-kpi.html"; // Redirect to main view
-            } catch (error) {
-              console.error("Error submitting KPI update:", error);
-              showAlert(`Failed to submit update: ${error.message}`, "danger");
-            }
-          });
+              const formData = new FormData();
+              formData.append("progressInput", progressInput);
+              formData.append("progressNote", progressNote);
+              formData.append("fileNote", fileNote);
+              formData.append("fileUpload", fileInput.files[0]); // Append the actual file
 
+              try {
+                const updateResponse = await fetch(`/kpi/update/${kpiId}`, {
+                  method: "POST",
+                  body: formData, // Use FormData for file uploads
+                });
+
+                if (!updateResponse.ok) {
+                  const errorData = await updateResponse.json();
+                  throw new Error(
+                    errorData.message ||
+                      `HTTP error! Status: ${updateResponse.status}`
+                  );
+                }
+
+                localStorage.setItem("kpiSubmitted", "true"); // Set flag for success message
+                window.location.href = "staff-view-kpi.html"; // Redirect to main view
+              } catch (error) {
+                console.error("Error submitting KPI update:", error);
+                showAlert(
+                  `Failed to submit update: ${error.message}`,
+                  "danger"
+                );
+              }
+            });
         } catch (error) {
           console.error("Error fetching KPI details:", error);
-          showAlert(`Failed to load KPI details. Error: ${error.message}`, "danger");
+          showAlert(
+            `Failed to load KPI details. Error: ${error.message}`,
+            "danger"
+          );
           // Optionally hide the form if details cannot be loaded
-          document.getElementById("updateFormCard").style.display = 'none';
+          document.getElementById("updateFormCard").style.display = "none";
         }
       });
     </script>
