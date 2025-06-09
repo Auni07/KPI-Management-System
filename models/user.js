@@ -19,16 +19,16 @@ const userSchema = new mongoose.Schema({
 
 // models/user.js
 userSchema.methods.matchPassword = async function(password) {
-  return await bcrypt.compare(password, this.password); // 比对密码
+  return await bcrypt.compare(password, this.password); 
 };
 
 
-// 生成 JWT Token
+
 userSchema.methods.generateAuthToken = function() {
   return jwt.sign({ id: this._id, role: this.role }, 'your_jwt_secret', { expiresIn: '1h' });
 };
 
-// 根据用户角色（manager/staff）来管理不同权限
+
 userSchema.methods.isManager = function() {
   return this.role === 'manager';
 };
