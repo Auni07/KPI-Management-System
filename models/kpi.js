@@ -7,12 +7,13 @@ const kpiSchema = new mongoose.Schema({
   targetValue: { type: Number, min: 0, default: 0 },
   progress: String,
   progressNumber: { type: Number, min: 0, default: 0 },
-  startDate: { type: Date},
+  startDate: { type: Date },
   dueDate: { type: Date, required: true },
   status: { type: String, enum: ['Not Started', 'In Progress', 'Completed'], required: true },
   approvalstat: { type: String, enum: ['Pending', 'Approved', 'Rejected'], required: true },
   assignedTo: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-  
+  feedback: { type: String },
+
   progressUpdates: [
     {
       progressInput: String,
