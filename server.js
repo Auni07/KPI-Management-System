@@ -7,18 +7,28 @@ const cors = require("cors");
 const bcrypt = require("bcryptjs");
 const app = express();
 const port = process.env.PORT || 3000;
+const userController = require('./controllers/userController');
 
 // Serve static files from the 'frontend' directory
-app.use(express.static(path.join(__dirname, 'frontend')));
+app.use(express.static(path.join(__dirname, 'frontend'))); // Serve static frontend files
+app.use(express.static(path.join(__dirname, 'public'))); // Serve static public files
+app.get("/dashboard", (req, res) => {
+  res.sendFile(path.join(__dirname, "frontend", "pages", "dashboard.html"));
+});
+
 
 // Models
 const User = require("./models/user");
 const KPI = require("./models/kpi");
 
-app.use(cors());
+// CORS middleware to allow requests from your frontend
+app.use(cors({
+  origin: 'http://127.0.0.1:5500',  // Allow frontend to make requests
+  methods: 'GET,POST',
+}));
 app.use(express.json({ extended: false }));
 
-// Connect DB
+// Connect DB - Ensure MongoDB connection is established
 mongoose
   .connect(process.env.MONGO_URI || "mongodb://localhost:27017/kpi_system", { useNewUrlParser: true, useUnifiedTopology: true })
   .then(() => console.log("MongoDB connected"))
@@ -27,18 +37,11 @@ mongoose
     process.exit(1);
   });
 
-// Middleware
-app.use(express.static(path.join(__dirname, "public")));
-app.use(express.static(path.join(__dirname, "frontend")));
-app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+// Middleware - to serve static files and handle form data
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
-// View Engine
-app.set("view engine", "ejs");
-app.set("views", path.join(__dirname, "/views"));
-
-// Session
+// Session Configuration
 app.use(
   session({
     secret: "mySecret",
@@ -53,58 +56,25 @@ app.use("/manage", require("./routes/kpiViewRoutes"));
 app.use('/api/kpis', require('./routes/kpiApiRoutes'));
 app.use('/api', require('./routes/userRoutes'));
 
-// Simple root route
-// app.get('/', (req, res) => res.send('API Running'));
-
 // Load staff KPI routes
 const kpiStaffRoutes = require("./routes/kpiStaffRoutes");
 app.use("/kpi", kpiStaffRoutes);
 
-// Web Page Routes (Login, Dashboard)
-app.get("/login", (req, res) => {
-  res.render("login");
-});
+// Login Route (userController handles login logic)
+app.post("/api/login", userController.loginUser);
 
-app.post("/login", async (req, res) => {
-  const { email, password } = req.body;
-
-  try {
-    const user = await User.findOne({ email });
-    if (!user) {
-      return res.status(400).send("Invalid email or password.");
-    }
-
-    const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) {
-      return res.status(400).send("Invalid email or password.");
-    }
-
-    req.session.user = {
-      _id: user._id,
-      email: user.email,
-      role: user.role,
-      name: user.name,
-    };
-
-    res.redirect("/api/dashboard");
-  } catch (err) {
-    console.error(err);
-    res.status(500).send("Server error during login.");
-  }
-});
-
-// 404 catch-all route
+// 404 catch-all route (for undefined routes)
 app.use((req, res) => {
   res.status(404).send("Sorry, Page Not Found!");
 });
 
-// Global error handler
+// Global error handler for all server errors
 app.use((err, req, res, next) => {
   console.error("Server Error:", err);
   res.status(500).send("Internal Server Error");
 });
 
-// Start Server
+// Start the server on the configured port
 app.listen(port, () => {
   console.log(`Server running on port ${port}`);
 });

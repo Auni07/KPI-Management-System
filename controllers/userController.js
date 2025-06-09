@@ -8,6 +8,10 @@ const jwt = require('jsonwebtoken');
 exports.registerUser = async (req, res) => {
   const { name, email, password, role, companyId, department } = req.body;
 
+  if (!name || !email || !password || !role || !companyId || !department) {
+    return res.status(400).json({ message: "All fields are required" });
+  }
+
   try {
     const userExists = await User.findOne({ email });
     if (userExists) {
@@ -23,6 +27,9 @@ exports.registerUser = async (req, res) => {
       role,
       companyId,
       department,
+
+      
+
     });
 
     await user.save();
