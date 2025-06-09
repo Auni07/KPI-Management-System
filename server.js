@@ -29,6 +29,7 @@ mongoose
 
 // Middleware
 app.use(express.static(path.join(__dirname, "public")));
+app.use(express.static(path.join(__dirname, "frontend")));
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
@@ -52,7 +53,7 @@ app.use('/api/kpis', require('./routes/kpiRoutes'));
 app.use('/api', require('./routes/userRoutes'));
 
 // Simple root route
-app.get('/', (req, res) => res.send('API Running'));
+// app.get('/', (req, res) => res.send('API Running'));
 
 // Load staff KPI routes
 const kpiStaffRoutes = require("./routes/kpiStaffRoutes");
