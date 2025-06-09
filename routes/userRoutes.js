@@ -18,6 +18,7 @@ router.put('/profile', protect, userController.updateUser);
 // 保护路由：修改密码
 router.put('/change-password', protect, userController.changePassword);
 
+console.log('userController:', userController);
 
 
 // 保护路由：删除 Staff 账户（只有 Manager 可以删除）
