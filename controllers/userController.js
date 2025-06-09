@@ -15,6 +15,7 @@ exports.registerUser = async (req, res) => {
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
+    
     const user = new User({
       name,
       email,
@@ -49,14 +50,13 @@ exports.loginUser = async (req, res) => {
       return res.status(400).json({ message: 'Invalid credentials' });
     }
 
-    console.log('DB encrypted password:', user.password);
-console.log('User input password:', password);
+   
 
 const isMatch = await bcrypt.compare(password, user.password);
 console.log('Password match:', isMatch);
 
 
-    console.log('Password match:', isMatch);
+ 
 
     if (!isMatch) {
       return res.status(401).json({ message: 'Invalid credentials' });
@@ -74,12 +74,6 @@ console.log('Password match:', isMatch);
 };
 
 
-// @route   POST /api/logout
-// @desc    Logout user (client clears token)
-// @access  Private
-exports.logoutUser = (req, res) => {
-  res.status(200).json({ message: 'Logged out successfully' });
-};
 
 // @route   GET /api/profile
 // @desc    Get the profile of the logged-in user
@@ -101,12 +95,12 @@ exports.getUserProfile = async (req, res) => {
 // @desc    Update the profile of the logged-in user
 // @access  Private
 exports.updateUser  = async (req, res) => {
-  const { username, email } = req.body;
+  const { name, email } = req.body;
 
   try {
     const user = await User.findByIdAndUpdate(
       req.user.id,
-      { username, email },
+      { name, email },
       { new: true }
     ).select('-password');
     if (!user) {
@@ -167,7 +161,7 @@ exports.deleteStaffAccount = async (req, res) => {
       return res.status(400).json({ message: 'You cannot delete your own account.' });
     }
 
-    await userToDelete.remove();
+    await userToDelete.deleteOne();
     res.status(200).json({ message: 'Staff account deleted successfully' });
   } catch (err) {
     console.error(err.message);
@@ -195,7 +189,7 @@ exports.getUniqueDepartments = async (req, res) => {
 // @access  Private (Manager or Admin only)
 exports.getAllStaff = async (req, res) => {
   try {
-    const staff = await User.find({ role: 'Staff' }).select('_id username email department');
+    const staff = await User.find({ role: 'Staff' }).select('_id name email department');
     res.json(staff);
   } catch (err) {
     console.error(err.message);

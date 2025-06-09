@@ -93,6 +93,34 @@ document.addEventListener("DOMContentLoaded", async () => {
     return;
   }
 
+  // Get feedback from textarea
+  const feedback = document.getElementById("RevEvi-Feedback-text").value.trim();
+
+  // Update your KPI object accordingly
+  kpi.approvalstat = "Approved";
+  kpi.feedback = feedback;  // Add feedback field here
+
+  try {
+    const response = await fetch(`http://localhost:3000/api/kpis/${kpi._id}`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        approvalstat: kpi.approvalstat,
+        feedback: kpi.feedback,  // send feedback in the update
+      }),
+    });
+
+    if (!response.ok) throw new Error("Failed to update approval status");
+
+    alert("KPI approved successfully!");
+    window.location.href = "manager-view-assigned-kpi.html";
+  } catch (error) {
+    console.error(error);
+    alert("Could not approve KPI. Please try again.");
+  }
+
   // Update the approvalstat field in the kpi object
   kpi.approvalstat = "Approved";
 
@@ -117,17 +145,38 @@ document.addEventListener("DOMContentLoaded", async () => {
 });
 
   // Reject button functionality
-  document.getElementById("Btn-Reject").addEventListener("click", function () {
-    kpi.status = "Rejected";  // Change the KPI's status to "Rejected"
-
-    // Find the index of the KPI in the kpis array
-    const index = kpis.findIndex(k => k.id === kpiId);
-    if (index !== -1) {
-      kpis[index] = kpi;  // Update the KPI in the kpis array
-      localStorage.setItem("kpis", JSON.stringify(kpis));  // Save the updated kpis array back to localStorage
+  document.getElementById("Btn-Reject").addEventListener("click", async function () {
+    if (!kpi || !kpi._id) {
+      alert("KPI data not loaded.");
+      return;
     }
 
-    // Redirect to another page
-    window.location.href = "manager-view-assigned-kpi.html";
+    // Get feedback from textarea
+    const feedback = document.getElementById("RevEvi-Feedback-text").value.trim();
+
+    // Update KPI object
+    kpi.approvalstat = "Rejected";
+    kpi.feedback = feedback;
+
+    try {
+      const response = await fetch(`http://localhost:3000/api/kpis/${kpi._id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          approvalstat: kpi.approvalstat,
+          feedback: kpi.feedback,
+        }),
+      });
+
+      if (!response.ok) throw new Error("Failed to reject KPI");
+
+      alert("KPI rejected successfully!");
+      window.location.href = "manager-view-assigned-kpi.html";
+    } catch (error) {
+      console.error("Error rejecting KPI:", error);
+      alert("Could not reject KPI. Please try again.");
+    }
   });
 });
