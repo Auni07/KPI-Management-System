@@ -3,6 +3,73 @@ const Kpi = require('../models/kpi');
 const User = require('../models/user');
 const mongoose = require('mongoose');
 
+
+exports.viewManagerKpisHtml = async (req, res) => {
+  try {
+    // Check if user is logged in
+    if (!req.session.user) {
+      return res.redirect("/login"); // Redirect to login if not authenticated
+    }
+
+    const filePath = path.join(
+      __dirname,
+      "..",
+      "frontend",
+      "pages",
+      "manager-view-assigned-kpi.html"
+    );
+
+    await fs.access(filePath); // Check if file exists
+    res.sendFile(filePath); // Send the HTML file
+  } catch (err) {
+    console.error("Error in viewManagerKpisHtml:", err); // Corrected function name
+    if (err.code === "ENOENT") {
+      return res.status(404).send("View page not found.");
+    }
+    res.status(500).send("Server Error loading KPI view.");
+  }
+};
+
+exports.viewManagerAssignKpiHtml = async (req, res) => {
+  try {
+    // Check if user is logged in
+    // Assuming 'req.session.user' is how you track authenticated users.
+    if (!req.session.user) {
+      // Redirect to login page if not authenticated
+      return res.redirect("/login");
+    }
+
+    // Construct the file path to the manager-assign-kpi.html file.
+    // It's assumed that this controller file is in 'controllers' directory
+    // and 'manager-assign-kpi.html' is in 'frontend/pages'.
+    const filePath = path.join(
+      __dirname,
+      "..", // Go up from 'controllers' to the project root
+      "frontend",
+      "pages",
+      "manager-assign-kpi.html"
+    );
+
+    // Check if the file exists and is accessible.
+    // This helps catch file not found errors before attempting to send it.
+    await fs.access(filePath);
+
+    // Send the HTML file to the client.
+    res.sendFile(filePath);
+  } catch (err) {
+    // Log the error for debugging purposes.
+    console.error("Error in viewManagerAssignKpiHtml:", err);
+
+    // Handle specific error codes, like file not found.
+    if (err.code === "ENOENT") {
+      return res.status(404).send("Manager Assign KPI page not found.");
+    }
+
+    // Handle any other server errors.
+    res.status(500).send("Server Error loading Manager Assign KPI view.");
+  }
+};
+
 // @route   GET /api/kpis
 // @desc    Get all KPIs with optional filters (staffName, department, status)
 // @access  Public
