@@ -1,4 +1,4 @@
-// --- DELETED: getStoredKpis function (no longer needed with backend) ---
+ //--- DELETED: getStoredKpis function (no longer needed with backend) ---
 // function getStoredKpis() {
 //   return JSON.parse(localStorage.getItem("kpis")) || [];
 // }
@@ -113,10 +113,10 @@ function renderCards(kpis) {
               <div class="progress-bar" role="progressbar" aria-valuenow="${progressPercentage}" aria-valuemin="0" aria-valuemax="100" style="width: ${progressPercentage}%;"></div>
             </div>
           </div>
-                    <div class="mt-3 d-flex justify-content-between align-items-center">
-            ${kpi.approvalstat?.toLowerCase() === "pending"
-              ? `<a href="manager-view-evidence.html?id=${kpi._id}" class="btn btn-sm btn-outline-primary">Review</a>`
-              : `<span></span>`
+          <div class="mt-3 d-flex align-items-center">
+            ${kpi.approvalstat === "Pending"
+              ? `<a href="manager-view-evidence.html?id=${kpi._id}" class="btn btn-sm btn-outline-primary me-auto">Review</a>`
+              : `<span class="me-auto"></span>`
             }
             <span class="badge bg-${getStatusColor(kpi.approvalstat)}">${kpi.approvalstat}</span>
           </div>

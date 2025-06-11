@@ -49,7 +49,8 @@ app.use(
 
 // Routes
 app.use('/api/dashboard', require('./routes/dashboardRoutes'));
-app.use('/manager', require('./routes/kpiRoutes'));
+app.use("/manage", require("./routes/kpiViewRoutes"));
+app.use('/api/kpis', require('./routes/kpiApiRoutes'));
 app.use('/api', require('./routes/userRoutes'));
 
 // Simple root route
