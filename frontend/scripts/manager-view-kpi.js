@@ -1,4 +1,4 @@
- //--- DELETED: getStoredKpis function (no longer needed with backend) ---
+//--- DELETED: getStoredKpis function (no longer needed with backend) ---
 // function getStoredKpis() {
 //   return JSON.parse(localStorage.getItem("kpis")) || [];
 // }
@@ -114,8 +114,8 @@ function renderCards(kpis) {
             </div>
           </div>
           <div class="mt-3 d-flex align-items-center">
-            ${kpi.approvalstat === "Pending"
-              ? `<a href="manager-view-evidence.html?id=${kpi._id}" class="btn btn-sm btn-outline-primary me-auto">Review</a>`
+            ${kpi.approvalstat === "Pending Approval"
+              ? `<a href="http://localhost:3000/pages/manager-view-evidence.html?id=${kpi._id}" class="btn btn-sm btn-outline-primary me-auto">Review</a>`
               : `<span class="me-auto"></span>`
             }
             <span class="badge bg-${getStatusColor(kpi.approvalstat)}">${kpi.approvalstat}</span>

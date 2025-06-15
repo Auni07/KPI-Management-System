@@ -282,7 +282,8 @@ exports.updateKpi = async (req, res) => {
     status, // From frontend dropdown, corresponds to 'approvalstat' in schema
     progressNumber,
     approvalstat, // Direct update, if explicitly sent
-    evidence // Array of evidence URLs/descriptions
+    evidence, // Array of evidence URLs/descriptions
+    feedback
   } = req.body;
 
   try {
@@ -310,6 +311,8 @@ exports.updateKpi = async (req, res) => {
 
     if (typeof progressNumber !== 'undefined') kpi.progressNumber = progressNumber; // Allow 0
     if (evidence !== undefined) kpi.evidence = evidence; // Assuming evidence is an array of strings
+
+    if (feedback !== undefined) kpi.feedback = feedback;
 
     // If staffName is provided, find the new assignedTo user and update
     if (staffName !== undefined) {
