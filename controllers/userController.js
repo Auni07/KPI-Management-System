@@ -56,14 +56,7 @@ exports.loginUser = async (req, res) => {
       return res.status(400).json({ message: 'Invalid credentials' });
     }
 
-
-
     const isMatch = await bcrypt.compare(password, user.password);
-    console.log('Password match:', isMatch);
-
-
-
-
     if (!isMatch) {
       return res.status(401).json({ message: 'Invalid credentials' });
     }
@@ -72,18 +65,20 @@ exports.loginUser = async (req, res) => {
     const userWithoutPassword = { ...user._doc };
     delete userWithoutPassword.password;
 
+    // save user info to session
+    req.session.user = userWithoutPassword;
+
     res.status(200).json({
       token,
       user: userWithoutPassword,
-      role: user.role  // 添加角色信息
+      role: user.role
     });
-    
+
   } catch (err) {
     console.error(err.message);
     res.status(500).send('Server Error');
   }
 };
-
 
 
 // @route   GET /api/profile

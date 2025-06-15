@@ -36,21 +36,21 @@ document.addEventListener("DOMContentLoaded", () => {
         userRole === "manager"
           ? `
         <li class="nav-item">
-          <a class="nav-link ${isManagerKpiPage ? "active" : ""}" href="manager-view-assigned-kpi.html">
+          <a class="nav-link ${isManagerKpiPage ? "active" : ""}" href="/pages/manager-view-assigned-kpi.html">
             <i class="fas fa-book"></i> <span class="menu-text">KPI Management</span>
           </a>
         </li>
       `
           : `
         <li class="nav-item">
-          <a class="nav-link ${isStaffKpiPage ? "active" : ""}" href="staff-view-kpi.html">
+          <a class="nav-link ${isStaffKpiPage ? "active" : ""}" href="/pages/staff-view-kpi.html">
             <i class="fas fa-tasks"></i> <span class="menu-text">My KPI</span>
           </a>
         </li>
       `
       }
       <li class="nav-item">
-        <a class="nav-link ${currentPage === "notifications.html" ? "active" : ""}" href="notifications.html">
+        <a class="nav-link ${currentPage === "notifications.html" ? "active" : ""}" href="/pages/notifications.html">
           <i class="fas fa-comments"></i> <span class="menu-text">Notifications</span>
         </a>
       </li>
