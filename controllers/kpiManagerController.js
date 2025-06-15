@@ -226,44 +226,51 @@ exports.getKpiById = async (req, res) => {
  * @access  Private (Manager)
  */
 exports.createKpi = async (req, res) => {
-  // Destructure fields from the request body as sent by manager-assign-kpi.html
   const { title, description, staffName, targetValue, dueDate, performanceIndicator } = req.body;
 
+  // Log received staffName
+  console.log('Received staffName:', staffName);
+
   try {
-    // 1. Find the assigned staff member by name (case-insensitive)
-    // Ensure the staff member has the 'staff' role
-    const assignedStaff = await User.findOne({ name: new RegExp(staffName, 'i'), role: 'staff' });
+    // Find staff member by name (case-insensitive)
+    const assignedStaff = await User.findOne({
+      name: new RegExp(staffName, 'i'),
+      role: 'Staff'
+    });
+
+    // Log the staff member's data if found
+    console.log('Assigned staff found:', assignedStaff);
 
     if (!assignedStaff) {
-      return res.status(404).json({ msg: 'Assigned staff member not found. Please ensure the staff name is correct and exists as a staff user.' });
+      console.log('Staff member not found with name:', staffName);  // Log if staff is not found
+      return res.status(404).json({
+        msg: 'Assigned staff member not found. Please ensure the staff name is correct and exists as a staff user.'
+      });
     }
 
-    // 2. Create the new KPI object
+    // Proceed with KPI creation
     const newKpi = new Kpi({
       title,
       description,
-      target: performanceIndicator, // Map frontend 'performanceIndicator' to backend 'target'
+      target: performanceIndicator,
       targetValue,
-      dueDate: new Date(dueDate), // Ensure date is correctly parsed
-      assignedTo: assignedStaff._id, // Use the staff's ObjectId
-      status: 'Not Started', // Default progress status for newly assigned KPI
-      progressNumber: 0, // Default progress for new KPI
-      approvalstat: 'Pending', // Default approval status for new KPI
-      // assignedBy: req.session.user._id, // Optional: if you want to track who assigned it
+      dueDate: new Date(dueDate),
+      assignedTo: assignedStaff._id, // Assign to found staff
+      status: 'Not Started',
+      progressNumber: 0,
+      approvalstat: 'Pending',
     });
 
-    // 3. Save the KPI to the database
     const kpi = await newKpi.save();
-    res.status(201).json(kpi); // 201 Created
+    res.status(201).json(kpi);
   } catch (err) {
-    console.error(err.message);
-    if (err.name === 'ValidationError') {
-        const messages = Object.values(err.errors).map(val => val.message);
-        return res.status(400).json({ msg: `Validation Error: ${messages.join(', ')}` });
-    }
+    console.error('Error creating KPI:', err.message);
     res.status(500).send('Server Error during KPI creation');
   }
 };
+
+
+
 
 /**
  * @route   PUT /api/kpis/:id (or /manage/:id)
