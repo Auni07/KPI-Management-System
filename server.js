@@ -23,8 +23,9 @@ const KPI = require("./models/kpi");
 
 // CORS middleware to allow requests from your frontend
 app.use(cors({
-  origin: 'http://127.0.0.1:5500',  // Allow frontend to make requests
-  methods: 'GET,POST',
+  origin: '*',  // Allow frontend to make requests
+  methods: 'GET,POST,PUT,DELETE',  // Allowed HTTP methods
+  allowedHeaders: 'Content-Type,Authorization',  // Allowed headers
 }));
 app.use(express.json({ extended: false }));
 

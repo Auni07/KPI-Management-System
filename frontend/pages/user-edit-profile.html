@@ -91,18 +91,7 @@
 
     <div id="sidebarOverlay" class="sidebar-overlay"></div>
     <script type="module" src="../scripts/render-sidebar.js"></script>
-    <script>
-      const form = document.getElementById("editProfileForm");
-      form.addEventListener("submit", function (e) {
-        e.preventDefault();
-        const name = document.getElementById("name").value;
-        const email = document.getElementById("email").value;
+    <script type="module" src="../scripts/user-edit-profile.js"></script>
 
-        localStorage.setItem("profileName", name);
-        localStorage.setItem("profileEmail", email);
-
-        window.location.href = "user-profile.html";
-      });
-    </script>
   </body>
 </html>

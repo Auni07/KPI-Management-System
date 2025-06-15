@@ -55,12 +55,12 @@ document.addEventListener("DOMContentLoaded", () => {
         </a>
       </li>
       <li class="nav-item">
-        <a class="nav-link ${isProfilePage ? "active" : ""}" href="user-profile.html">
+        <a class="nav-link ${isProfilePage ? "active" : ""}" href="/pages/user-profile.html">
           <i class="fas fa-user"></i> <span class="menu-text">Profile</span>
         </a>
       </li>
       <li class="nav-item">
-        <a class="nav-link" href="user-logout.html">
+        <a class="nav-link" href="/pages/user-logout.html">
           <i class="fas fa-sign-out-alt"></i> <span class="menu-text">Logout</span>
         </a>
       </li>

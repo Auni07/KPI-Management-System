@@ -22,5 +22,9 @@ router.delete('/delete-staff/:id', protect, userController.deleteStaffAccount);
 
 router.post('/register', userController.registerUser);
 router.post('/login', userController.loginUser);
+router.get("/users/email/:email", protect, userController.getUserByEmail);
+router.delete("/delete-account", protect, userController.deleteAccount);
+
+
 
 module.exports = router;

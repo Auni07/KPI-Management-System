@@ -9,6 +9,7 @@ document.addEventListener("DOMContentLoaded", () => {
   if (staffDashboard) staffDashboard.style.display = "none";
   if (managerDashboard) managerDashboard.style.display = "none";
 
+  
   if (role === "staff") {
     staffDashboard.style.display = "block";
   } else if (role === "manager") {
@@ -18,4 +19,3 @@ document.addEventListener("DOMContentLoaded", () => {
     window.location.href = "index.html";
   }
 });
-

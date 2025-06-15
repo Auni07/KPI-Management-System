@@ -6,7 +6,7 @@ const jwt = require('jsonwebtoken');
 // @desc    Register a new user
 // @access  Public
 exports.registerUser = async (req, res) => {
-  const { name, email, password, role, companyId, department } = req.body;
+  const { name, email, password, role, companyId, department, phone, managerId } = req.body;
 
   if (!name || !email || !password || !role || !companyId || !department) {
     return res.status(400).json({ message: "All fields are required" });
@@ -15,11 +15,11 @@ exports.registerUser = async (req, res) => {
   try {
     const userExists = await User.findOne({ email });
     if (userExists) {
-      return res.status(400).json({ message: 'User already exists' });
+      return res.status(400).json({ message: "User already exists" });
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
-    
+
     const user = new User({
       name,
       email,
@@ -27,9 +27,8 @@ exports.registerUser = async (req, res) => {
       role,
       companyId,
       department,
-
-      
-
+      phone,
+      manager: managerId || null
     });
 
     await user.save();
@@ -40,8 +39,8 @@ exports.registerUser = async (req, res) => {
 
     res.status(201).json({ token, user: userWithoutPassword });
   } catch (err) {
-    console.error(err.message);
-    res.status(500).send('Server Error');
+    console.error("Register error:", err); // 更清晰的错误输出
+    res.status(500).json({ message: err.message || "Server Error" });
   }
 };
 
@@ -57,13 +56,13 @@ exports.loginUser = async (req, res) => {
       return res.status(400).json({ message: 'Invalid credentials' });
     }
 
-   
-
-const isMatch = await bcrypt.compare(password, user.password);
-console.log('Password match:', isMatch);
 
 
- 
+    const isMatch = await bcrypt.compare(password, user.password);
+    console.log('Password match:', isMatch);
+
+
+
 
     if (!isMatch) {
       return res.status(401).json({ message: 'Invalid credentials' });
@@ -73,7 +72,12 @@ console.log('Password match:', isMatch);
     const userWithoutPassword = { ...user._doc };
     delete userWithoutPassword.password;
 
-    res.status(200).json({ token, user: userWithoutPassword });
+    res.status(200).json({
+      token,
+      user: userWithoutPassword,
+      role: user.role  // 添加角色信息
+    });
+    
   } catch (err) {
     console.error(err.message);
     res.status(500).send('Server Error');
@@ -91,17 +95,42 @@ exports.getUserProfile = async (req, res) => {
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
     }
-    res.status(200).json(user);
+
+    let departmentManager = null;
+    let departmentStaffList = [];
+
+    if (user.role === 'Staff') {
+      // 查找该部门的 Manager（理论上应该只有一个）
+      departmentManager = await User.findOne({
+        role: 'Manager',
+        department: user.department
+      }).select('name');
+    }
+
+    if (user.role === 'Manager') {
+      // 查找属于该部门的 Staff（不包括自己）
+      departmentStaffList = await User.find({
+        role: 'Staff',
+        department: user.department
+      }).select('name');
+    }
+
+    res.status(200).json({
+      ...user._doc,
+      departmentManager,
+      departmentStaffList
+    });
   } catch (err) {
     console.error(err.message);
     res.status(500).send('Server Error');
   }
 };
 
+
 // @route   PUT /api/profile
 // @desc    Update the profile of the logged-in user
 // @access  Private
-exports.updateUser  = async (req, res) => {
+exports.updateUser = async (req, res) => {
   const { name, email } = req.body;
 
   try {
@@ -124,7 +153,8 @@ exports.updateUser  = async (req, res) => {
 // @desc    Change the password of the logged-in user
 // @access  Private
 exports.changePassword = async (req, res) => {
-  const { oldPassword, newPassword } = req.body;
+  const { currentPassword, newPassword } = req.body;
+
 
   try {
     const user = await User.findById(req.user.id);
@@ -132,7 +162,8 @@ exports.changePassword = async (req, res) => {
       return res.status(404).json({ message: 'User not found' });
     }
 
-    const isMatch = await bcrypt.compare(oldPassword, user.password);
+    const isMatch = await bcrypt.compare(currentPassword, user.password);
+
     if (!isMatch) {
       return res.status(400).json({ message: 'Incorrect old password' });
     }
@@ -144,7 +175,8 @@ exports.changePassword = async (req, res) => {
     res.status(200).json({ message: 'Password updated successfully' });
   } catch (err) {
     console.error(err.message);
-    res.status(500).send('Server Error');
+    res.status(500).json({ message: "Server Error" });
+
   }
 };
 
@@ -201,5 +233,50 @@ exports.getAllStaff = async (req, res) => {
   } catch (err) {
     console.error(err.message);
     res.status(500).send('Server Error');
+  }
+};
+
+exports.getUserByEmail = async (req, res) => {
+  try {
+    const user = await User.findOne({ email: req.params.email });
+    if (!user) return res.status(404).json({ message: "User not found" });
+    res.json(user);
+  } catch (err) {
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+
+exports.deleteAccount = async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id);
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    await user.deleteOne();
+    res.status(200).json({ message: "Your account has been deleted" });
+  } catch (err) {
+    console.error("Delete self error:", err.message);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+
+exports.deleteStaffAccount = async (req, res) => {
+  try {
+    const staff = await User.findById(req.params.id);
+    if (!staff) {
+      return res.status(404).json({ message: "Staff not found" });
+    }
+
+    
+    if (staff._id.toString() === req.user.id) {
+      return res.status(400).json({ message: "Use /delete-account to delete your own account" });
+    }
+
+    await staff.deleteOne();
+    res.status(200).json({ message: "Staff account deleted successfully" });
+  } catch (err) {
+    console.error("Delete staff error:", err.message);
+    res.status(500).json({ message: "Server error" });
   }
 };

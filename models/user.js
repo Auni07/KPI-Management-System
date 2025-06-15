@@ -2,36 +2,48 @@ const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
-
 const userSchema = new mongoose.Schema({
- // _id: mongoose.Schema.Types.ObjectId,
-  companyId: {type: String, required: true},
+  companyId: { type: String, required: true },
+
   name: { type: String, required: true },
-  email: { type: String, required: true, unique: true },
+
+  email: { type: String, required: true, unique: true, lowercase: true, trim: true },
+
+  phone: { type: String, required: true, trim: true },
+
   password: { type: String, required: true },
-  role: { type: String, enum: ['Manager', 'Staff'], required: true },
-  manager: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null },
-  department: { type: String, enum: ['Sales & Marketing', 'HR & Admin', 'IT', 'Customer Service', 'Account & Finance', null], default: null },
+
+  role: {
+    type: String,
+    enum: ['Manager', 'Staff'],
+    required: true
+  },
+
+  manager: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    default: null
+  },
+
+  department: {
+    type: String,
+    enum: ['Sales & Marketing', 'HR & Admin', 'IT', 'Customer Service', 'Account & Finance'],
+    required: true  // ✅ 建议设为 required: true，确保后端匹配前端逻辑
+  }
 }, { timestamps: true });
 
-// --- CHANGE THIS PART ---
-
-
-// models/user.js
 userSchema.methods.matchPassword = async function(password) {
-  return await bcrypt.compare(password, this.password); 
+  return await bcrypt.compare(password, this.password);
 };
-
-
 
 userSchema.methods.generateAuthToken = function() {
-  return jwt.sign({ id: this._id, role: this.role }, 'your_jwt_secret', { expiresIn: '1h' });
+  return jwt.sign({ id: this._id, role: this.role }, 'your_jwt_secret', {
+    expiresIn: '1h'
+  });
 };
 
-
 userSchema.methods.isManager = function() {
-  return this.role === 'manager';
+  return this.role === 'Manager';
 };
 
 module.exports = mongoose.models.User || mongoose.model('User', userSchema);
-// --- END CHANGE ---
