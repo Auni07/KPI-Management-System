@@ -20,13 +20,13 @@ exports.registerUser = async (req, res) => {
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // If the user is a staff member, assign the manager based on department
+    // If the user is a staff member, assign the manager
     let manager = null;
     if (role === 'Staff') {
       // Find the manager from the same department
       manager = await User.findOne({ role: 'Manager', department });
       if (!manager) {
-        return res.status(400).json({ message: "No manager found in the same department" });
+        return res.status(400).json({ message: "No manager found " });
       }
     }
 
