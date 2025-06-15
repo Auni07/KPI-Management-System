@@ -16,6 +16,18 @@ app.get("/dashboard", (req, res) => {
   res.sendFile(path.join(__dirname, "frontend", "pages", "dashboard.html"));
 });
 
+app.get("/kpi-management", (req, res) => {
+  if (!req.session.user) {
+    return res.redirect("/user-login");
+  }
+
+  const role = req.session.user.role;
+  if (role === "manager") {
+    res.sendFile(path.join(__dirname, "frontend", "pages", "manager-view-assigned-kpi.html"));
+  } else {
+    res.sendFile(path.join(__dirname, "frontend", "pages", "staff-view-kpi.html"));
+  }
+});
 
 // Models
 const User = require("./models/user");
@@ -61,7 +73,14 @@ app.use('/api', require('./routes/userRoutes'));
 const kpiStaffRoutes = require("./routes/kpiStaffRoutes");
 app.use("/kpi", kpiStaffRoutes);
 
-// Login Route (userController handles login logic)
+// Login routes 
+app.get("/login", (req, res) => {
+  res.redirect("/user-login");
+});
+app.get("/user-login", (req, res) => {
+  res.sendFile(path.join(__dirname, "frontend", "pages", "user-login.html"));
+});
+// userController handles login logic
 app.post("/api/login", userController.loginUser);
 
 // 404 catch-all route (for undefined routes)
