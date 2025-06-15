@@ -15,24 +15,6 @@ app.use(express.static(path.join(__dirname, 'public'))); // Serve static public 
 app.get("/dashboard", (req, res) => {
   res.sendFile(path.join(__dirname, "frontend", "pages", "dashboard.html"));
 });
-app.get("/kpi-management", (req, res) => {
-  // If the user is not logged in, redirect them to the login page
-  if (!req.session.user) {
-    console.log("User not logged in. Redirecting to /user-login.");
-    return res.redirect("/user-login");
-  }
-
-  // Extract the user role from session
-  const role = req.session.user.role;
-  console.log("Accessing KPI Management. Role:", role);
-
-  // Serve different pages based on the user's role
-  if (role === "manager") {
-    res.sendFile(path.join(__dirname, "frontend", "pages", "manager-view-assigned-kpi.html"));
-  } else {
-    res.sendFile(path.join(__dirname, "frontend", "pages", "staff-view-kpi.html"));
-  }
-});
 
 
 // Models
@@ -79,14 +61,7 @@ app.use('/api', require('./routes/userRoutes'));
 const kpiStaffRoutes = require("./routes/kpiStaffRoutes");
 app.use("/kpi", kpiStaffRoutes);
 
-// Login routes 
-app.get("/login", (req, res) => {
-  res.redirect("/user-login");
-});
-app.get("/user-login", (req, res) => {
-  res.sendFile(path.join(__dirname, "frontend", "pages", "user-login.html"));
-});
-//  (userController handles login logic)
+// Login Route (userController handles login logic)
 app.post("/api/login", userController.loginUser);
 
 // 404 catch-all route (for undefined routes)
