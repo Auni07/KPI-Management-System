@@ -60,8 +60,7 @@
               </p>
               <p><strong>Target:</strong> <span id="kpiTarget"></span></p>
               <p>
-                <strong>Progress:</strong> <span id="kpiProgress"></span> (can
-                update below)
+                <strong>Progress:</strong> <span id="kpiProgress"></span> 
               </p>
               <p>
                 <strong>Percentage Completion:</strong>
@@ -72,7 +71,10 @@
               </p>
               <p><strong>Due Date:</strong> <span id="kpiDueDate"></span></p>
               <p><strong>Status:</strong> <span id="kpiStatus"></span></p>
-              <p><strong>Recent Feedback:</strong> <span id="kpiFeedback"></span></p>
+              <p>
+                <strong>Recent Feedback:</strong>
+                <span id="kpiFeedback"></span>
+              </p>
 
               <h5 class="mb-3 text-teal">
                 <i class="fas fa-edit me-2 text-teal"></i>Update Your KPI
@@ -82,17 +84,36 @@
                 <form id="updateForm">
                   <div class="mb-3">
                     <label for="progressInput" class="form-label"
-                      >Progress Update</label
+                      >New Progress Description</label
                     >
                     <div class="input-group">
                       <span class="input-group-text"
-                        ><i class="fas fa-chart-line"></i
+                        ><i class="fas fa-edit"></i
                       ></span>
                       <input
                         type="text"
                         class="form-control"
                         id="progressInput"
                         placeholder="E.g. 15%, 100 users, 5 posts"
+                        required
+                      />
+                    </div>
+                  </div>
+
+                  <div class="mb-3">
+                    <label for="progressNumberInput" class="form-label"
+                      >New Progress Value</label
+                    >
+                    <div class="input-group">
+                      <span class="input-group-text"
+                        ><i class="fas fa-calculator"></i
+                      ></span>
+                      <input
+                        type="number"
+                        class="form-control"
+                        id="progressNumberInput"
+                        placeholder="Enter numerical progress"
+                        min="0"
                         required
                       />
                     </div>
@@ -212,7 +233,6 @@
 
         try {
           // Fetch specific KPI details from your API
-          // Changed from `/kpi/api/kpis/${kpiId}` to `/kpi/api/kpi-staff/${kpiId}`
           const response = await fetch(`/kpi/api/kpi-staff/${kpiId}`);
           if (!response.ok) {
             const errorData = await response.json();
@@ -232,8 +252,7 @@
           document.getElementById("kpiTitle").textContent = kpi.title;
           document.getElementById("kpiDescription").textContent =
             kpi.description || "N/A";
-          document.getElementById("kpiTarget").textContent =
-            kpi.target || "N/A";
+          document.getElementById("kpiTarget").textContent = `${kpi.targetValue || 'N/A'} ${kpi.target || ''}`.trim();
           document.getElementById("kpiProgress").textContent =
             kpi.progress || "0";
           document.getElementById("kpiCompletion").textContent =
@@ -245,7 +264,8 @@
             ? new Date(kpi.dueDate).toLocaleDateString()
             : "N/A";
           document.getElementById("kpiStatus").textContent = kpi.status;
-          document.getElementById("kpiFeedback").textContent = kpi.feedback || "No feedback yet."; // Populate feedback
+          document.getElementById("kpiFeedback").textContent =
+            kpi.feedback || "No feedback yet."; // Populate feedback
 
           // Add event listener for form submission
           document
@@ -256,20 +276,26 @@
               const progressInput = document
                 .getElementById("progressInput")
                 .value.trim();
+              const progressNumberInput = document.getElementById(
+                "progressNumberInput"
+              ).value; // Get the numerical progress
               const progressNote = document
                 .getElementById("progressNote")
                 .value.trim();
-              const fileInput = document.getElementById("fileUpload"); // Get the file input element
+              const fileInput = document.getElementById("fileUpload");
               const fileNote = document.getElementById("fileNote").value.trim();
 
+              // Basic validation for the new numerical input
               if (
                 !progressInput ||
+                !progressNumberInput ||
+                isNaN(progressNumberInput) ||
                 !progressNote ||
                 !fileInput.files.length ||
                 !fileNote
               ) {
                 showAlert(
-                  "⚠️ Please fill all the details before submitting.",
+                  "⚠️ Please fill all required fields correctly (including numerical progress).",
                   "warning"
                 );
                 return;
@@ -277,14 +303,15 @@
 
               const formData = new FormData();
               formData.append("progressInput", progressInput);
+              formData.append("progressNumberInput", progressNumberInput); // Append the numerical progress
               formData.append("progressNote", progressNote);
               formData.append("fileNote", fileNote);
-              formData.append("fileUpload", fileInput.files[0]); // Append the actual file
+              formData.append("fileUpload", fileInput.files[0]);
 
               try {
                 const updateResponse = await fetch(`/kpi/update/${kpiId}`, {
                   method: "POST",
-                  body: formData, // Use FormData for file uploads
+                  body: formData,
                 });
 
                 if (!updateResponse.ok) {
@@ -295,8 +322,8 @@
                   );
                 }
 
-                localStorage.setItem("kpiSubmitted", "true"); // Set flag for success message
-                window.location.href = "/kpi/view"; // Redirect to staff-view-kpi.html (your view page)
+                localStorage.setItem("kpiSubmitted", "true");
+                window.location.href = "/kpi/view";
               } catch (error) {
                 console.error("Error submitting KPI update:", error);
                 showAlert(
@@ -311,7 +338,6 @@
             `Failed to load KPI details. Error: ${error.message}`,
             "danger"
           );
-          // Optionally hide the form if details cannot be loaded
           document.getElementById("updateFormCard").style.display = "none";
         }
       });
