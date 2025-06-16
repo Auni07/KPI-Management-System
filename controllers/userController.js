@@ -24,7 +24,7 @@ exports.registerUser = async (req, res) => {
     let manager = null;
     if (role === 'Staff') {
       // Find the manager from the same department
-      manager = await User.findOne({ role: 'Manager', department });
+      manager = await User.findOne({ role: 'Manager'});
       if (!manager) {
         return res.status(400).json({ message: "No manager found " });
       }

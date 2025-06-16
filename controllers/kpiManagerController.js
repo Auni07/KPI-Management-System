@@ -169,8 +169,9 @@ exports.getKpis = async (req, res) => {
 
     // Handle Department Filter
     if (department) {
+      // If department filter is provided, find users who belong to that department
       const departmentUsers = await User.find({ department: new RegExp(department, 'i') }).select('_id');
-
+      
       if (departmentUsers.length === 0) {
         return res.json([]); // No users in this department, so no KPIs will match
       }
@@ -189,13 +190,17 @@ exports.getKpis = async (req, res) => {
       }
     }
 
+    // Fetch KPIs based on the query
     const kpis = await Kpi.find(query).populate('assignedTo', 'name email department');
+    
+    // Return the KPIs or an empty array if no matching data
     res.json(kpis);
   } catch (err) {
     console.error(err.message);
     res.status(500).send('Server Error');
   }
 };
+
 
 
 /**
@@ -233,6 +238,11 @@ exports.createKpi = async (req, res) => {
 
   // Log received staffName
   console.log('Received staffName:', staffName);
+
+  // Check if targetValue is provided
+  if (!targetValue) {
+    return res.status(400).json({ msg: "Target Value is required." });
+  }
 
   try {
     // Find staff member by name (case-insensitive)
