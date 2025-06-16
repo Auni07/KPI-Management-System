@@ -162,7 +162,7 @@ document.addEventListener("DOMContentLoaded", function () {
       }
 
       alert("KPI deleted successfully!");
-      window.location.href = "/manager/view"; // Redirect after deletion
+      window.location.href = "/manage/view"; // Redirect after deletion
 
     } catch (error) {
       console.error("Error deleting KPI:", error);

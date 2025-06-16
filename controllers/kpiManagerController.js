@@ -118,7 +118,7 @@ exports.getManagerKpisData = async (req, res) => {
       .lean();
 
     // Fetch staff managed by this user
-    const staff = await User.find({ manager: userId, role: 'staff' }, "name department").lean();
+    const staff = await User.find({ manager: userId, role: 'Staff' }, "name department").lean();
 
     // Extract unique departments from the fetched staff
     const departments = [
@@ -323,7 +323,7 @@ exports.updateKpi = async (req, res) => {
 
     // If staffName is provided, find the new assignedTo user and update
     if (staffName !== undefined) {
-      const newAssignedStaff = await User.findOne({ name: new RegExp(staffName, 'i'), role: 'staff' });
+      const newAssignedStaff = await User.findOne({ name: new RegExp(staffName, 'i'), role: 'Staff' });
       if (!newAssignedStaff) {
         return res.status(404).json({ msg: 'New assigned staff member not found. Please ensure the staff name is correct.' });
       }
