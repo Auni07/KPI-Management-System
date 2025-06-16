@@ -83,12 +83,13 @@ exports.getKpiUpdateFormHtml = async (req, res) => {
  */
 exports.updateKpiProgress = async (req, res) => {
   const kpiId = req.params.id;
-  const { progressInput, progressNote, fileNote } = req.body;
+  // Destructure the new progressNumberInput from req.body
+  const { progressInput, progressNumberInput, progressNote, fileNote } = req.body;
   // Multer populates req.file after processing the upload
   const filePath = req.file ? req.file.path : null;
 
   try {
-    // Find the KPI to get its current targetValue
+    // Find the KPI to get its current progressNumber and targetValue
     const kpi = await KPI.findById(kpiId);
     if (!kpi) {
       // If KPI not found, respond with 404 and remove any uploaded file
@@ -119,28 +120,53 @@ exports.updateKpiProgress = async (req, res) => {
         });
     }
 
-    let newProgressNumber = kpi.progressNumber;
-    let newStatus = kpi.status;
-    const newProgressString = progressInput; // Store the raw input string
+    // --- MODIFICATION STARTS HERE ---
 
-    // Attempt to parse numerical progress for comparison against targetValue
-    const parsedProgressValue = parseFloat(progressInput);
-    if (!isNaN(parsedProgressValue)) {
-      newProgressNumber = parsedProgressValue;
+    let newProgressNumber;
+    // Attempt to parse numerical progress from progressNumberInput (this is the *added* amount)
+    const addedProgress = parseFloat(progressNumberInput);
+
+    if (isNaN(addedProgress) || addedProgress < 0) {
+      // If the numerical input is invalid, send a bad request response
+      if (filePath) {
+        await fs
+          .unlink(filePath)
+          .catch((fileErr) =>
+            console.error("Error deleting temp file:", fileErr)
+          );
+      }
+      return res.status(400).json({ message: "Invalid numerical progress value. Must be a non-negative number to add." });
     }
 
-    // Update status based on progress and target
-    if (newProgressNumber >= kpi.targetValue && kpi.targetValue > 0) {
-      newStatus = "Completed";
-    } else if (newProgressNumber > 0 && newProgressNumber < kpi.targetValue) {
-      newStatus = "In Progress";
+    // Calculate the total new progress number by adding to the current progress
+    newProgressNumber = (kpi.progressNumber || 0) + addedProgress;
+
+    // --- MODIFICATION ENDS HERE ---
+
+
+    let newStatus = kpi.status; // Initialize with current status
+
+    // Update status based on the new total numerical progress and target
+    if (kpi.targetValue > 0) { // Only calculate if target is meaningful
+        if (newProgressNumber >= kpi.targetValue) {
+            newStatus = "Completed";
+        } else if (newProgressNumber > 0) {
+            newStatus = "In Progress";
+        } else {
+            newStatus = "Not Started";
+        }
+    } else if (newProgressNumber > 0) {
+        // If targetValue is 0 or less (e.g., for non-numerical KPIs, or if target isn't set for calculation)
+        // and progress is being made, mark as In Progress.
+        newStatus = "In Progress";
     } else {
-      newStatus = "Not Started"; // Fallback, or keep current if 0 progress
+        newStatus = "Not Started"; // If no target and no progress.
     }
+
 
     // Create the new progress update entry
     const newProgressUpdate = {
-      progressInput: newProgressString, // Store the user's string input (e.g., "50%")
+      progressInput: progressInput, // Store the user's string input (e.g., "50%")
       progressNote: progressNote,
       file: {
         filePath: filePath, // Path to the uploaded file
@@ -157,7 +183,7 @@ exports.updateKpiProgress = async (req, res) => {
           progressUpdates: newProgressUpdate, // Add the new update to the array
         },
         $set: {
-          progress: newProgressString, // Update the main progress string
+          progress: progressInput, // Update the main progress string (descriptive)
           progressNumber: newProgressNumber, // Update the main numerical progress
           status: newStatus, // Update the KPI status
           approvalstat: "Pending", // Set approval status to 'Pending'

@@ -20,6 +20,16 @@ exports.registerUser = async (req, res) => {
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
+    // If the user is a staff member, assign the manager
+    let manager = null;
+    if (role === 'Staff') {
+      // Find the manager from the same department
+      manager = await User.findOne({ role: 'Manager', department });
+      if (!manager) {
+        return res.status(400).json({ message: "No manager found " });
+      }
+    }
+
     const user = new User({
       name,
       email,
@@ -28,7 +38,7 @@ exports.registerUser = async (req, res) => {
       companyId,
       department,
       phone,
-      manager: managerId || null
+      manager: manager ? manager._id : managerId || null
     });
 
     await user.save();
@@ -43,6 +53,7 @@ exports.registerUser = async (req, res) => {
     res.status(500).json({ message: err.message || "Server Error" });
   }
 };
+
 
 // @route   POST /api/login
 // @desc    Login user and get token
