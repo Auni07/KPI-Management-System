@@ -8,14 +8,31 @@ const form = document.getElementById("kpiForm");
 form.addEventListener("submit", async (e) => {
   e.preventDefault();
 
+
+  // Get the targetValue input value
+  const targetValueInput = document.getElementById("targetValue").value;
+  const targetValue = parseInt(targetValueInput); // Convert to an integer
+
+  // Validate targetValue: Ensure it's a valid integer
+  if (isNaN(targetValue) || targetValue <= 0) {
+    alert("Target Value must be a positive integer.");
+    return; // Prevent form submission if it's not a valid integer
+  }
+
   const kpiData = {
     title: document.getElementById("kpiTitle").value,
     description: document.getElementById("kpiDescription").value,
     staffName: document.getElementById("staffName").value,
-    targetValue: parseFloat(document.getElementById("targetValue").value),
+    targetValue: targetValue, // Ensure it's an integer
     dueDate: document.getElementById("dueDate").value,
     performanceIndicator: document.getElementById("performanceIndicator").value,
   };
+
+   // Ensure all the fields are filled before submitting
+  if (!kpiData.title || !kpiData.description || !kpiData.staffName || !kpiData.targetValue) {
+    alert("Please fill in all required fields with valid data.");
+    return; // Stop the submission if data is incomplete
+  }
 
   console.log("Submitting KPI Data:", kpiData);
 

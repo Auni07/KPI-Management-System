@@ -80,6 +80,7 @@
                 <option value="Pending">Pending</option>
                 <option value="Approved">Approved</option>
                 <option value="Rejected">Rejected</option>
+                <option value="No New Progress">No New Progress</option>
               </select>
             </div>
           </div>
@@ -260,8 +261,8 @@
               return "danger";
             case "pending":
               return "warning text-dark";
-            case "no new progress":
-              return "secondary";
+            case "No New Progress":
+              return "warning text-dark";
             default:
               return "secondary";
           }

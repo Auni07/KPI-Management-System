@@ -126,8 +126,10 @@ function getStatusColor(approvalstat) {
   switch (approvalstat?.toLowerCase()) {
     case "approved":
       return "success";
-    case "rejected":
+     case "rejected":
       return "danger";
+      case "No New Progress":
+      return "warning text-dark";
     case "pending": // Use lowercase for robust matching
       return "warning text-dark";
     default:

@@ -124,7 +124,7 @@ document.addEventListener("DOMContentLoaded", function () {
         body: JSON.stringify({
           targetValue: parseInt(updatedTargetValue), // Ensure it's a number
           dueDate: updatedDueDate,
-          status: updatedApprovalStatus, // Backend's updateKpi will map this to `approvalstat`
+          approvalstat: updatedApprovalStatus, // Backend's updateKpi will map this to `approvalstat`
         }),
       });
 
