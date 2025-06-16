@@ -248,7 +248,7 @@ exports.createKpi = async (req, res) => {
       assignedTo: assignedStaff._id, // Use the staff's ObjectId
       status: 'Not Started', // Default progress status for newly assigned KPI
       progressNumber: 0, // Default progress for new KPI
-      approvalstat: 'Pending', // Default approval status for new KPI
+      approvalstat: 'No Progress Yet', // Default approval status for new KPI
       // assignedBy: req.session.user._id, // Optional: if you want to track who assigned it
     });
 
@@ -258,8 +258,12 @@ exports.createKpi = async (req, res) => {
   } catch (err) {
     console.error(err.message);
     if (err.name === 'ValidationError') {
-        const messages = Object.values(err.errors).map(val => val.message);
-        return res.status(400).json({ msg: `Validation Error: ${messages.join(', ')}` });
+      const messages = Object.values(err.errors).map(val => val.message);
+      console.error('Validation errors:', messages); // logs detailed errors to your server console
+      return res.status(400).json({ 
+        msg: "Validation Error", 
+        errors: messages 
+      });
     }
     res.status(500).send('Server Error during KPI creation');
   }
@@ -293,6 +297,15 @@ exports.updateKpi = async (req, res) => {
       return res.status(404).json({ msg: 'KPI not found' });
     }
 
+    // Handle legacy string feedback by converting it to an array if needed
+    if (typeof kpi.feedback === 'string') {
+      kpi.feedback = [{
+        text: kpi.feedback,
+        date: new Date()
+      }];
+      await kpi.save();
+    }
+
     // Update KPI fields if they are provided in the request body
     if (title !== undefined) kpi.title = title;
     if (description !== undefined) kpi.description = description;
@@ -301,18 +314,23 @@ exports.updateKpi = async (req, res) => {
     if (performanceIndicator !== undefined) kpi.target = performanceIndicator; // Map 'performanceIndicator' to 'target'
 
     // Frontend manager-kpi-detail's "Status" dropdown updates 'approvalstat'
-    // If the frontend sends 'status' with values like "Pending", "Approved", "Rejected"
     if (status !== undefined) {
-      kpi.approvalstat = status; // Update approvalstat based on frontend 'status' field
+      kpi.status = status;  // update the progress status, NOT approvalstat
     }
-    // If frontend sends 'approvalstat' directly, it would override or be redundant.
-    // Keeping this for explicit backend update if desired.
-    if (approvalstat !== undefined) kpi.approvalstat = approvalstat;
+    if (approvalstat !== undefined) {
+      kpi.approvalstat = approvalstat; // update approvalstat separately if sent
+    }
 
     if (typeof progressNumber !== 'undefined') kpi.progressNumber = progressNumber; // Allow 0
     if (evidence !== undefined) kpi.evidence = evidence; // Assuming evidence is an array of strings
 
-    if (feedback !== undefined) kpi.feedback = feedback;
+    // If new feedback text is provided, push it into the feedback array
+    if (feedback) {
+      kpi.feedback.push({
+        text: feedback,
+        date: new Date()
+      });
+    }
 
     // If staffName is provided, find the new assignedTo user and update
     if (staffName !== undefined) {
