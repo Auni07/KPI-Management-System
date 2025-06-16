@@ -12,6 +12,7 @@ const userController = require('./controllers/userController');
 // Serve static files from the 'frontend' directory
 app.use(express.static(path.join(__dirname, 'frontend'))); // Serve static frontend files
 app.use(express.static(path.join(__dirname, 'public'))); // Serve static public files
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 app.get("/dashboard", (req, res) => {
   res.sendFile(path.join(__dirname, "frontend", "pages", "dashboard.html"));
 });

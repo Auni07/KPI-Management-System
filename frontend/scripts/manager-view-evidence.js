@@ -16,6 +16,17 @@ document.addEventListener("DOMContentLoaded", async () => {
     document.getElementById('gva-actual').textContent = kpi.progressNumber;
     document.getElementById('kpi-staff').textContent = kpi.assignedTo ? kpi.assignedTo.name : 'Unassigned';
 
+    // Check if kpi.file exists and has filePath
+    if (kpi.progressUpdates.length > 0 && kpi.progressUpdates[0].file?.filePath) {
+      const evidenceLink = document.getElementById("kpi-evidence");
+      const safePath = kpi.progressUpdates[0].file.filePath.replace(/\\/g, "/");
+      evidenceLink.href = `http://localhost:3000/${safePath}`;
+      evidenceLink.textContent = "View Evidence File";
+      evidenceLink.target = "_blank";
+    } else {
+      document.getElementById("kpi-evidence").textContent = "No file submitted.";
+    }
+    console.log("KPI data:", kpi);
   } catch (error) {
     console.error(error);
     document.getElementById('kpi-output').textContent = 'Error loading KPI data';

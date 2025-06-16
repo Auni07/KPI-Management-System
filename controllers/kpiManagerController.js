@@ -206,7 +206,10 @@ exports.getKpis = async (req, res) => {
 exports.getKpiById = async (req, res) => {
   try {
     // Populate assignedTo to get full staff details
-    const kpi = await Kpi.findById(req.params.id).populate('assignedTo', 'name email department');
+    const kpi = await Kpi.findById(req.params.id)
+    .populate('assignedTo', 'name email department')
+    .lean(); // Optional: if you're not modifying the object
+
     if (!kpi) {
       return res.status(404).json({ msg: 'KPI not found' });
     }
