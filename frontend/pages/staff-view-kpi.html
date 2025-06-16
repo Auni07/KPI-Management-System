@@ -343,78 +343,93 @@
         kpiProgressChart.update();
       }
 
-      // Function to update the monthly progress chart
+      // Function to update the daily progress chart, showing unique KPI statuses over time
       function updateMonthlyProgressChart(kpis) {
-        const weeklyCompletedCounts = {};
-        const weeklyInProgressCounts = {};
-        const allWeeks = new Set(); // To collect all unique weeks
+        const dailyKpiStatusSnapshots = {}; // Stores the latest status of each KPI for each day
+        const allDates = new Set(); // To collect all unique dates from progress updates
 
         kpis.forEach((kpi) => {
-          const dueDate = new Date(kpi.dueDate);
-          // Get the start of the week (Sunday)
-          const startOfWeek = new Date(dueDate);
-          startOfWeek.setDate(dueDate.getDate() - dueDate.getDay()); // Sunday is 0
-          startOfWeek.setHours(0, 0, 0, 0);
+          // Sort progress updates by createdAt date to easily get the latest for any given day
+          kpi.progressUpdates.sort(
+            (a, b) => new Date(a.createdAt) - new Date(b.createdAt)
+          );
 
-          const weekKey = `${startOfWeek.getFullYear()}-${(
-            startOfWeek.getMonth() + 1
-          )
-            .toString()
-            .padStart(2, "0")}-${startOfWeek
-            .getDate()
-            .toString()
-            .padStart(2, "0")}`;
-          allWeeks.add(weekKey);
+          kpi.progressUpdates.forEach((update) => {
+            const updateDate = new Date(update.createdAt);
+            // Format the date to 'YYYY-MM-DD' for daily aggregation
+            const dateKey = `${updateDate.getFullYear()}-${(
+              updateDate.getMonth() + 1
+            )
+              .toString()
+              .padStart(2, "0")}-${updateDate
+              .getDate()
+              .toString()
+              .padStart(2, "0")}`;
 
-          if (kpi.status === "Completed") {
-            weeklyCompletedCounts[weekKey] =
-              (weeklyCompletedCounts[weekKey] || 0) + 1;
-          } else if (kpi.status === "In Progress") {
-            weeklyInProgressCounts[weekKey] =
-              (weeklyInProgressCounts[weekKey] || 0) + 1;
-          }
+            allDates.add(dateKey); // Add this date to our set of all unique dates
+
+            // Initialize the daily snapshot if it doesn't exist for this date
+            if (!dailyKpiStatusSnapshots[dateKey]) {
+              dailyKpiStatusSnapshots[dateKey] = {};
+            }
+
+            // Store the *current* KPI status associated with this update.
+            // This assumes `kpi.status` reflects the status *after* this update.
+            // For more accuracy, consider adding a `statusAtUpdate` field to your progressUpdates subdocument.
+            dailyKpiStatusSnapshots[dateKey][kpi._id] = kpi.status; // Use KPI ID to track unique KPIs
+          });
         });
 
-        const sortedWeeks = Array.from(allWeeks).sort((a, b) => {
+        // Sort all unique dates chronologically
+        const sortedDates = Array.from(allDates).sort((a, b) => {
           const dateA = new Date(a);
           const dateB = new Date(b);
           return dateA - dateB;
         });
 
-        let cumulativeCompleted = 0;
-        const cumulativeCompletedData = sortedWeeks.map((week) => {
-          cumulativeCompleted += weeklyCompletedCounts[week] || 0;
-          return cumulativeCompleted;
+        const cumulativeCompletedData = [];
+        const cumulativeInProgressData = [];
+        let currentKpiStatuses = {}; // Tracks the latest status of each KPI up to the current date
+
+        sortedDates.forEach((dateKey) => {
+          // Update `currentKpiStatuses` with any new updates for this specific date
+          const updatesForThisDay = dailyKpiStatusSnapshots[dateKey];
+          if (updatesForThisDay) {
+            for (const kpiId in updatesForThisDay) {
+              currentKpiStatuses[kpiId] = updatesForThisDay[kpiId];
+            }
+          }
+
+          // Count current completed and in-progress KPIs based on their latest known status
+          let completedCount = 0;
+          let inProgressCount = 0;
+
+          for (const kpiId in currentKpiStatuses) {
+            if (currentKpiStatuses[kpiId] === "Completed") {
+              completedCount++;
+            } else if (currentKpiStatuses[kpiId] === "In Progress") {
+              inProgressCount++;
+            }
+          }
+
+          cumulativeCompletedData.push(completedCount);
+          cumulativeInProgressData.push(inProgressCount);
         });
 
-        let cumulativeInProgress = 0;
-        const cumulativeInProgressData = sortedWeeks.map((week) => {
-          cumulativeInProgress += weeklyInProgressCounts[week] || 0;
-          return cumulativeInProgress;
-        });
-
-        // Format labels for display (e.g., "Jun 2 - Jun 8")
-        const formattedLabels = sortedWeeks.map((weekKey) => {
-          const startOfWeek = new Date(weekKey);
-          const endOfWeek = new Date(startOfWeek);
-          endOfWeek.setDate(startOfWeek.getDate() + 6); // End of the week (Saturday)
-
-          const startMonth = startOfWeek.toLocaleString("default", {
+        // Format labels for display (e.g., "Jun 17")
+        const formattedLabels = sortedDates.map((dateKey) => {
+          const date = new Date(dateKey);
+          return date.toLocaleDateString("en-US", {
             month: "short",
+            day: "numeric",
           });
-          const startDate = startOfWeek.getDate();
-          const endMonth = endOfWeek.toLocaleString("default", {
-            month: "short",
-          });
-          const endDate = endOfWeek.getDate();
-
-          return `${startMonth} ${startDate} - ${endMonth} ${endDate}`;
         });
 
+        // Update the Chart.js instance
         kpiAreaChart.data.labels = formattedLabels;
         kpiAreaChart.data.datasets = [
           {
-            label: "Cumulative Completed Tasks",
+            label: "Cumulative Completed KPIs", // Label changed to reflect KPIs
             data: cumulativeCompletedData,
             fill: true,
             backgroundColor: "rgba(25, 135, 84, 0.2)", // Green for completed
@@ -424,7 +439,7 @@
             pointRadius: 5,
           },
           {
-            label: "Cumulative In Progress Tasks",
+            label: "Cumulative In Progress KPIs", // Label changed to reflect KPIs
             data: cumulativeInProgressData,
             fill: true,
             backgroundColor: "rgba(255, 193, 7, 0.2)", // Yellow for in progress

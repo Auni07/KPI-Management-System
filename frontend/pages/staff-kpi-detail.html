@@ -264,8 +264,13 @@
             ? new Date(kpi.dueDate).toLocaleDateString()
             : "N/A";
           document.getElementById("kpiStatus").textContent = kpi.status;
-          document.getElementById("kpiFeedback").textContent =
-            kpi.feedback || "No feedback yet."; // Populate feedback
+          if (kpi.feedback && kpi.feedback.length > 0) {
+            // Sort feedback by date in descending order to get the latest first
+            kpi.feedback.sort((a, b) => new Date(b.date) - new Date(a.date));
+            document.getElementById("kpiFeedback").textContent = kpi.feedback[0].text;
+          } else {
+            document.getElementById("kpiFeedback").textContent = "No feedback yet.";
+          }
 
           // Add event listener for form submission
           document
