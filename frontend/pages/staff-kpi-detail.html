@@ -72,6 +72,7 @@
               </p>
               <p><strong>Due Date:</strong> <span id="kpiDueDate"></span></p>
               <p><strong>Status:</strong> <span id="kpiStatus"></span></p>
+              <p><strong>Recent Feedback:</strong> <span id="kpiFeedback"></span></p>
 
               <h5 class="mb-3 text-teal">
                 <i class="fas fa-edit me-2 text-teal"></i>Update Your KPI
@@ -244,6 +245,7 @@
             ? new Date(kpi.dueDate).toLocaleDateString()
             : "N/A";
           document.getElementById("kpiStatus").textContent = kpi.status;
+          document.getElementById("kpiFeedback").textContent = kpi.feedback || "No feedback yet."; // Populate feedback
 
           // Add event listener for form submission
           document
