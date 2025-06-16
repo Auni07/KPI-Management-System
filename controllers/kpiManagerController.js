@@ -248,7 +248,7 @@ exports.createKpi = async (req, res) => {
       assignedTo: assignedStaff._id, // Use the staff's ObjectId
       status: 'Not Started', // Default progress status for newly assigned KPI
       progressNumber: 0, // Default progress for new KPI
-      approvalstat: 'Pending', // Default approval status for new KPI
+      approvalstat: 'No Progress Yet', // Default approval status for new KPI
       // assignedBy: req.session.user._id, // Optional: if you want to track who assigned it
     });
 
