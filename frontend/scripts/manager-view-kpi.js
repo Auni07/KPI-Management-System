@@ -12,17 +12,9 @@ async function fetchKpis(filters = {}) {
   let url = `${API_BASE_URL}/api/kpis`;
   const params = new URLSearchParams();
 
-  // *** CHANGE: Updated to handle 'staffId' parameter from the filter logic ***
-  // Your backend route must be configured to accept these query parameters.
-  if (filters.staffId) {
-    params.append("staffId", filters.staffId);
-  }
-  if (filters.department) {
-    params.append("department", filters.department);
-  }
-  if (filters.status) {
-    params.append("status", filters.status);
-  }
+  if (filters.staffId) params.append("staffId", filters.staffId);
+  if (filters.department) params.append("department", filters.department);
+  if (filters.status) params.append("status", filters.status);
 
   if (params.toString()) {
     url += `?${params.toString()}`;
@@ -45,7 +37,7 @@ async function fetchKpis(filters = {}) {
   }
 }
 
-// Render KPI cards (No changes needed here)
+// Render KPI cards
 function renderCards(kpis) {
   kpiCardsContainer.innerHTML = "";
 
@@ -66,7 +58,9 @@ function renderCards(kpis) {
     let progressPercentage = 0;
     
     // This logic correctly determines progress based on numbers
-    if (kpi.progressNumber === kpi.targetValue && kpi.targetValue !== 0) {
+    if (kpi.progressNumber >= kpi.targetValue && kpi.targetValue !== 0
+      && kpi.approvalstat?.toLowerCase() === "approved")
+       {
         progressText = "Completed";
         progressPercentage = 100;
     } else if (kpi.progressNumber > 0 && kpi.progressNumber < kpi.targetValue) {
@@ -75,16 +69,17 @@ function renderCards(kpis) {
     } else if (kpi.progressNumber === 0) {
         progressText = "Not Started";
         progressPercentage = 0;
-    } else { // Handles cases where progress might exceed target or values are invalid
+    } else {
         progressText = "Check Values"; 
-        progressPercentage = 100; // Cap at 100 for visual consistency
+      progressPercentage = 100;
     }
 
+    // Sanitize and cap progress value
     if (isNaN(progressPercentage) || !isFinite(progressPercentage)) {
         progressPercentage = 0;
     }
     
-    progressPercentage = Math.round(progressPercentage);
+    progressPercentage = Math.min(100, Math.round(progressPercentage));//capped at 100
 
     card.innerHTML = `
       <div class="card h-100 shadow-sm">
@@ -104,11 +99,19 @@ function renderCards(kpis) {
             <p class="card-text"><strong>Indicators:</strong> ${kpi.target}</p>
             <p class="card-text"><strong>Progress:</strong> ${progressText}</p>
             <div class="progress" style="height: 20px;">
-              <div class="progress-bar" role="progressbar" aria-valuenow="${progressPercentage}" aria-valuemin="0" aria-valuemax="100" style="width: ${progressPercentage}%;"></div>
+            <div class="progress-bar" role="progressbar" 
+                aria-valuenow="${progressPercentage}" 
+                aria-valuemin="0" 
+                aria-valuemax="100" 
+                style="width: ${progressPercentage}%;">
+                ${progressPercentage}%
+              </div>
             </div>
+
           </div>
           <div class="mt-3 d-flex align-items-center">
-            ${kpi.approvalstat === "Pending"
+            ${
+              kpi.approvalstat === "Pending"
               ? `<a href="http://localhost:3000/pages/manager-view-evidence.html?id=${kpi._id}" class="btn btn-sm btn-outline-primary me-auto">Review</a>`
               : `<span class="me-auto"></span>`
             }
@@ -121,16 +124,15 @@ function renderCards(kpis) {
   });
 }
 
-// Determine status color (No changes needed here)
+// Determine status color
 function getStatusColor(approvalstat) {
   switch (approvalstat?.toLowerCase()) {
     case "approved":
       return "success";
      case "rejected":
       return "danger";
-      case "No New Progress":
-      return "warning text-dark";
-    case "pending": // Use lowercase for robust matching
+    case "no new progress":
+    case "pending":
       return "warning text-dark";
     default:
       return "secondary";
@@ -139,7 +141,7 @@ function getStatusColor(approvalstat) {
 
 // Filter logic
 function applyFilters() {
-  const staffId = filterStaff.value; // This value is the staff member's _id
+  const staffId = filterStaff.value;
   const department = filterDepartment.value;
   const status = filterStatus.value;
 
@@ -151,7 +153,7 @@ function applyFilters() {
   });
 }
 
-// Function to populate a dropdown (No changes needed here)
+// Function to populate a dropdown
 function populateDropdown(selectElement, items, idField, nameField) {
   selectElement.innerHTML = '<option value="">All</option>';
   items.forEach(item => {
@@ -162,7 +164,7 @@ function populateDropdown(selectElement, items, idField, nameField) {
   });
 }
 
-// Function to fetch unique departments and populate the dropdown
+// Fetch and populate departments
 async function fetchAndPopulateDepartments() {
   try {
     const response = await fetch(`${API_BASE_URL}/api/departments`);
@@ -177,7 +179,7 @@ async function fetchAndPopulateDepartments() {
   }
 }
 
-// Function to fetch staff members and populate the dropdown
+// Fetch and populate staff
 async function fetchAndPopulateStaff() {
   try {
     const response = await fetch(`${API_BASE_URL}/api/staff`);
@@ -192,15 +194,14 @@ async function fetchAndPopulateStaff() {
   }
 }
 
-// Add event listeners
+// Event listeners for filter dropdowns
 [filterStaff, filterDepartment, filterStatus].forEach((input) => {
   input.addEventListener("change", applyFilters);
 });
 
-// *** MAJOR FIX: Use a single, consolidated DOMContentLoaded event listener ***
-// This ensures all initial data fetching and population happens once the page is ready.
+// On DOM loaded
 document.addEventListener("DOMContentLoaded", () => {
-  fetchKpis(); // Initial fetch for all KPIs
+  fetchKpis(); // Load all KPIs
   fetchAndPopulateDepartments(); // Populate department filter
   fetchAndPopulateStaff(); // Populate staff filter
 });

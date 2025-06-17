@@ -202,17 +202,31 @@
           kpisToRender.forEach((kpi) => {
             // Determine progress text and percentage based on progressNumber and targetValue
             let progressText = "";
-            let progressPercentage = 0;
-            if (kpi.progressNumber === kpi.targetValue) {
-                progressText = "Completed";
-                progressPercentage = 100;
-            } else if (kpi.progressNumber > 0 && kpi.progressNumber < kpi.targetValue) {
-                progressText = "In Progress";
-                progressPercentage = (kpi.progressNumber / kpi.targetValue) * 100;
-            } else if (kpi.progressNumber === 0) {
-                progressText = "Not Started";
-            }
-            progressPercentage = Math.round(progressPercentage);
+    let progressPercentage = 0;
+    
+    // This logic correctly determines progress based on numbers
+    if (kpi.progressNumber >= kpi.targetValue && kpi.targetValue !== 0
+      && kpi.approvalstat?.toLowerCase() === "approved")
+       {
+        progressText = "Completed";
+        progressPercentage = 100;
+    } else if (kpi.progressNumber > 0 && kpi.progressNumber < kpi.targetValue) {
+        progressText = "In Progress";
+        progressPercentage = (kpi.progressNumber / kpi.targetValue) * 100;
+    } else if (kpi.progressNumber === 0) {
+        progressText = "Not Started";
+        progressPercentage = 0;
+    } else {
+        progressText = "Check Values"; 
+      progressPercentage = 100;
+    }
+
+    // Sanitize and cap progress value
+    if (isNaN(progressPercentage) || !isFinite(progressPercentage)) {
+        progressPercentage = 0;
+    }
+    
+    progressPercentage = Math.min(100, Math.round(progressPercentage));//capped at 100
 
 
             const cardHtml = `
