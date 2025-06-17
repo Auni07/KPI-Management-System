@@ -456,6 +456,7 @@
       const kpiCardsContainerStaff = document.getElementById(
         "kpiCardsContainerStaff"
       );
+      
       function renderKPICards(kpisToRender) {
         kpiCardsContainerStaff.innerHTML = ""; // Clear existing cards
 
@@ -510,7 +511,7 @@
                   kpi.targetValue || "N/A"
                 } ${kpi.target} </p>
                 <p class="mb-3"><strong>Progress:</strong> ${
-                  kpi.progress || "0"
+                  kpi.progress || "No progress yet"
                 } </p>
                 <p class="mb-3"><strong>Status:</strong>
                 <span class="small-badge badge ${getStatusBadgeClass(

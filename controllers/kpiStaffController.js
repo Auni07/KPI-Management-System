@@ -4,9 +4,6 @@ const User = require("../models/user"); // User mongoose model
 const path = require("path"); // Node.js path module for file paths
 const fs = require("fs").promises; // Node.js file system module (promises for async operations)
 
-// No need for multer configuration here as it's handled in kpiStaffRoutes.js
-// The req.file object will be populated by the Multer middleware in the route.
-
 // --- HTML Rendering Routes ---
 
 /**
@@ -24,8 +21,6 @@ exports.viewKpisHtml = async (req, res) => {
     const userId = req.session.user._id;
 
     // Fetch KPIs assigned to the user
-    // Note: For actual rendering with data, you'd typically use a templating engine
-    // or send JSON and let client-side JS render it. This serves the static HTML.
     const kpis = await KPI.find({ assignedTo: userId }).lean();
     const user = await User.findById(userId).populate("manager").lean();
 
@@ -83,16 +78,12 @@ exports.getKpiUpdateFormHtml = async (req, res) => {
  */
 exports.updateKpiProgress = async (req, res) => {
   const kpiId = req.params.id;
-  // Destructure the new progressNumberInput from req.body
   const { progressInput, progressNumberInput, progressNote, fileNote } = req.body;
-  // Multer populates req.file after processing the upload
   const filePath = req.file ? req.file.path : null;
 
   try {
-    // Find the KPI to get its current progressNumber and targetValue
     const kpi = await KPI.findById(kpiId);
     if (!kpi) {
-      // If KPI not found, respond with 404 and remove any uploaded file
       if (filePath) {
         await fs
           .unlink(filePath)
@@ -103,9 +94,7 @@ exports.updateKpiProgress = async (req, res) => {
       return res.status(404).json({ message: "KPI not found." });
     }
 
-    // Check if the KPI is assigned to the logged-in user for security
     if (kpi.assignedTo.toString() !== req.session.user._id.toString()) {
-      // If forbidden, respond with 403 and remove any uploaded file
       if (filePath) {
         await fs
           .unlink(filePath)
@@ -120,14 +109,10 @@ exports.updateKpiProgress = async (req, res) => {
         });
     }
 
-    // --- MODIFICATION STARTS HERE ---
-
-    let newProgressNumber;
-    // Attempt to parse numerical progress from progressNumberInput (this is the *added* amount)
+    // Calculate the new progress number by adding to the current progress
     const addedProgress = parseFloat(progressNumberInput);
 
     if (isNaN(addedProgress) || addedProgress < 0) {
-      // If the numerical input is invalid, send a bad request response
       if (filePath) {
         await fs
           .unlink(filePath)
@@ -138,17 +123,24 @@ exports.updateKpiProgress = async (req, res) => {
       return res.status(400).json({ message: "Invalid numerical progress value. Must be a non-negative number to add." });
     }
 
-    // Calculate the total new progress number by adding to the current progress
-    newProgressNumber = (kpi.progressNumber || 0) + addedProgress;
+    let newProgressNumber = (kpi.progressNumber || 0) + addedProgress;
 
-    // --- MODIFICATION ENDS HERE ---
+    // Ensure progressNumber does not exceed targetValue
+    if (kpi.targetValue && kpi.targetValue > 0 && newProgressNumber > kpi.targetValue) {
+        newProgressNumber = kpi.targetValue;
+    }
 
 
     let newStatus = kpi.status; // Initialize with current status
+    let newApprovalStat = kpi.approvalstat; // Initialize with current approval status
 
-    // Update status based on the new total numerical progress and target
-    if (kpi.targetValue > 0) { // Only calculate if target is meaningful
-        if (newProgressNumber >= kpi.targetValue) {
+    // Logic for setting KPI status based on progress
+    if (kpi.targetValue > 0) {
+        const completionPercentage = (newProgressNumber / kpi.targetValue) * 100;
+
+        if (completionPercentage >= 100) {
+            // If numerical progress meets or exceeds target, set status to 'Completed'
+            // However, the *actual* "Completed" status (for approval purposes) still depends on manager's approval
             newStatus = "Completed";
         } else if (newProgressNumber > 0) {
             newStatus = "In Progress";
@@ -156,20 +148,21 @@ exports.updateKpiProgress = async (req, res) => {
             newStatus = "Not Started";
         }
     } else if (newProgressNumber > 0) {
-        // If targetValue is 0 or less (e.g., for non-numerical KPIs, or if target isn't set for calculation)
-        // and progress is being made, mark as In Progress.
+        // For non-numerical KPIs or if targetValue is 0/N/A, and progress is made
         newStatus = "In Progress";
     } else {
-        newStatus = "Not Started"; // If no target and no progress.
+        newStatus = "Not Started";
     }
 
+    // ALWAYS set approvalstat to "Pending" when a staff member updates progress
+    newApprovalStat = "Pending";
 
     // Create the new progress update entry
     const newProgressUpdate = {
-      progressInput: progressInput, // Store the user's string input (e.g., "50%")
+      progressInput: progressInput,
       progressNote: progressNote,
       file: {
-        filePath: filePath, // Path to the uploaded file
+        filePath: filePath,
         fileNote: fileNote,
       },
       createdAt: new Date(),
@@ -180,16 +173,16 @@ exports.updateKpiProgress = async (req, res) => {
       kpiId,
       {
         $push: {
-          progressUpdates: newProgressUpdate, // Add the new update to the array
+          progressUpdates: newProgressUpdate,
         },
         $set: {
-          progress: progressInput, // Update the main progress string (descriptive)
-          progressNumber: newProgressNumber, // Update the main numerical progress
-          status: newStatus, // Update the KPI status
-          approvalstat: "Pending", // Set approval status to 'Pending'
+          progress: progressInput,
+          progressNumber: newProgressNumber,
+          status: newStatus, // This is the status based on progress, awaiting approval
+          approvalstat: newApprovalStat, // Always set to Pending upon staff update
         },
       },
-      { new: true, runValidators: true } // `new: true` returns the updated document, `runValidators: true` ensures schema validations run
+      { new: true, runValidators: true }
     );
 
     res
@@ -199,7 +192,6 @@ exports.updateKpiProgress = async (req, res) => {
       });
   } catch (err) {
     console.error("Error updating KPI progress:", err);
-    // Remove the uploaded file if a server error occurred during DB update
     if (filePath) {
       await fs
         .unlink(filePath)
@@ -207,7 +199,6 @@ exports.updateKpiProgress = async (req, res) => {
           console.error("Error deleting uploaded file:", fileErr)
         );
     }
-    // Differentiate between Mongoose validation errors or other server errors
     if (err.name === "ValidationError") {
       return res
         .status(400)
@@ -240,7 +231,34 @@ exports.getAssignedKpisApi = async (req, res) => {
 
     const userId = req.session.user._id;
     const kpis = await KPI.find({ assignedTo: userId }).lean();
-    res.json({ kpis: kpis });
+
+    // --- IMPORTANT: Apply the "Completed" status logic here for consistency ---
+    const processedKpis = kpis.map(kpi => {
+        let finalStatus = kpi.status; // Start with the status determined by progress
+        const completionPercentage = kpi.targetValue > 0 ? Math.min(100, (kpi.progressNumber / kpi.targetValue) * 100) : 0;
+
+        // Override status to "Completed" ONLY if approved AND 100% complete
+        if (kpi.approvalstat === 'Approved' && completionPercentage === 100) {
+            finalStatus = 'Completed';
+        } else if (finalStatus === 'Completed' && !(kpi.approvalstat === 'Approved' && completionPercentage === 100)) {
+            // This case handles a KPI that was previously "Completed"
+            // (e.g., approved and 100%) but then its approval status changed
+            // or its progress decreased (if that's possible).
+            // It reverts the *display* status if criteria are no longer met.
+            if (kpi.progressNumber > 0) {
+                finalStatus = 'In Progress';
+            } else {
+                finalStatus = 'Not Started';
+            }
+        }
+
+        return {
+            ...kpi, // Return all existing KPI fields
+            status: finalStatus // Override the status with the new determined status
+        };
+    });
+
+    res.json({ kpis: processedKpis });
   } catch (err) {
     console.error("Error fetching assigned KPIs API:", err);
     res.status(500).json({ message: "Server error fetching KPIs." });
@@ -265,14 +283,28 @@ exports.getSpecificKpiApi = async (req, res) => {
       return res.status(404).json({ message: "KPI not found." });
     }
 
-    // Security check: Ensure the KPI belongs to the logged-in user
     if (kpi.assignedTo.toString() !== req.session.user._id.toString()) {
       return res
         .status(403)
         .json({ message: "Forbidden: You do not have access to this KPI." });
     }
 
-    res.json({ kpi: kpi });
+    // --- Apply the "Completed" status logic here too for individual KPI detail view ---
+    let finalStatus = kpi.status;
+    const completionPercentage = kpi.targetValue > 0 ? Math.min(100, (kpi.progressNumber / kpi.targetValue) * 100) : 0;
+
+    if (kpi.approvalstat === 'Approved' && completionPercentage === 100) {
+        finalStatus = 'Completed';
+    } else if (finalStatus === 'Completed' && !(kpi.approvalstat === 'Approved' && completionPercentage === 100)) {
+        if (kpi.progressNumber > 0) {
+            finalStatus = 'In Progress';
+        } else {
+            finalStatus = 'Not Started';
+        }
+    }
+
+    // Return the KPI with the potentially adjusted status
+    res.json({ kpi: { ...kpi, status: finalStatus } });
   } catch (err) {
     console.error("Error fetching specific KPI API:", err);
     if (err.name === "CastError") {
