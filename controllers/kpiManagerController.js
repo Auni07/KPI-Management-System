@@ -171,7 +171,7 @@ exports.getKpis = async (req, res) => {
     if (department) {
       // If department filter is provided, find users who belong to that department
       const departmentUsers = await User.find({ department: new RegExp(department, 'i') }).select('_id');
-      
+
       if (departmentUsers.length === 0) {
         return res.json([]); // No users in this department, so no KPIs will match
       }
@@ -192,7 +192,7 @@ exports.getKpis = async (req, res) => {
 
     // Fetch KPIs based on the query
     const kpis = await Kpi.find(query).populate('assignedTo', 'name email department');
-    
+
     // Return the KPIs or an empty array if no matching data
     res.json(kpis);
   } catch (err) {
@@ -212,8 +212,8 @@ exports.getKpiById = async (req, res) => {
   try {
     // Populate assignedTo to get full staff details
     const kpi = await Kpi.findById(req.params.id)
-    .populate('assignedTo', 'name email department')
-    .lean(); // Optional: if you're not modifying the object
+      .populate('assignedTo', 'name email department')
+      .lean(); // Optional: if you're not modifying the object
 
     if (!kpi) {
       return res.status(404).json({ msg: 'KPI not found' });
@@ -271,7 +271,8 @@ exports.createKpi = async (req, res) => {
       assignedTo: assignedStaff._id, // Use the staff's ObjectId
       status: 'Not Started', // Default progress status for newly assigned KPI
       progressNumber: 0, // Default progress for new KPI
-      approvalstat: 'No New Progress', // Default approval status for new KPI
+      approvalstat: 'No New Progress',
+      startDate: new Date() // Default approval status for new KPI
       // assignedBy: req.session.user._id, // Optional: if you want to track who assigned it
     });
 
@@ -283,9 +284,9 @@ exports.createKpi = async (req, res) => {
     if (err.name === 'ValidationError') {
       const messages = Object.values(err.errors).map(val => val.message);
       console.error('Validation errors:', messages); // logs detailed errors to your server console
-      return res.status(400).json({ 
-        msg: "Validation Error", 
-        errors: messages 
+      return res.status(400).json({
+        msg: "Validation Error",
+        errors: messages
       });
     }
     res.status(500).send('Server Error during KPI creation');

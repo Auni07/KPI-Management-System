@@ -144,3 +144,45 @@ exports.getMyKpiTrend = async (req, res) => {
     res.status(500).json({ success: false, message: 'Server Error', error: err });
   }
 };
+
+// Get per-KPI completion percentage for current staff
+exports.getMyKpiProgressBars = async (req, res) => {
+  try {
+    const userId = req.user._id;
+
+    const kpis = await Kpi.find({ assignedTo: userId });
+
+    const result = kpis.map(kpi => ({
+      title: kpi.title,
+      percent: kpi.targetValue === 0 ? 0 : Math.round((kpi.progressNumber / kpi.targetValue) * 100)
+    }));
+
+    res.json({ success: true, data: result });
+  } catch (err) {
+    console.error("Error in getMyKpiProgressBars:", err);
+    res.status(500).json({ success: false, message: "Server error", error: err.message });
+  }
+};
+
+// Get the nearest-due KPI for current staff
+exports.getEarliestDueKpi = async (req, res) => {
+  try {
+    const userId = req.user.id;
+
+    const kpi = await Kpi.find({
+      assignedTo: userId,
+      status: { $ne: 'Completed' }
+    })
+      .sort({ dueDate: 1 })
+      .limit(1);
+
+    if (!kpi || kpi.length === 0) {
+      return res.json({ msg: "No KPI found" });
+    }
+
+    res.json(kpi[0]);
+  } catch (err) {
+    console.error("getEarliestDueKpi error:", err);
+    res.status(500).json({ msg: "Server error" });
+  }
+};
