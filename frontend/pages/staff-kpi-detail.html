@@ -59,9 +59,7 @@
                 <strong>Description:</strong> <span id="kpiDescription"></span>
               </p>
               <p><strong>Target:</strong> <span id="kpiTarget"></span></p>
-              <p>
-                <strong>Progress:</strong> <span id="kpiProgress"></span>
-              </p>
+              <p><strong>Progress:</strong> <span id="kpiProgress"></span></p>
               <p>
                 <strong>Percentage Completion:</strong>
                 <span id="kpiCompletion"></span>
@@ -77,105 +75,105 @@
               </p>
 
               <div id="KPIupdatecontainer">
-              <h5 class="mb-3 text-teal">
-                <i class="fas fa-edit me-2 text-teal"></i>Update Your KPI
-                Progress
-              </h5>
-              <div id="updateFormCard" class="card shadow-sm p-3 mt-3">
-                <form id="updateForm">
-                  <div class="mb-3">
-                    <label for="progressInput" class="form-label"
-                      >Current Progress Description</label
-                    >
-                    <div class="input-group">
-                      <span class="input-group-text"
-                        ><i class="fas fa-edit"></i
-                      ></span>
-                      <input
-                        type="text"
-                        class="form-control"
-                        id="progressInput"
-                        placeholder="E.g. 15%, 100 users, 5 posts"
-                        required
-                      />
+                <h5 class="mb-3 text-teal">
+                  <i class="fas fa-edit me-2 text-teal"></i>Update Your KPI
+                  Progress
+                </h5>
+                <div id="updateFormCard" class="card shadow-sm p-3 mt-3">
+                  <form id="updateForm">
+                    <div class="mb-3">
+                      <label for="progressInput" class="form-label"
+                        >Current Progress Description</label
+                      >
+                      <div class="input-group">
+                        <span class="input-group-text"
+                          ><i class="fas fa-edit"></i
+                        ></span>
+                        <input
+                          type="text"
+                          class="form-control"
+                          id="progressInput"
+                          placeholder="E.g. 15%, 100 users, 5 posts"
+                          required
+                        />
+                      </div>
                     </div>
-                  </div>
 
-                  <div class="mb-3">
-                    <label for="progressNumberInput" class="form-label"
-                      >New Progress Value</label
-                    >
-                    <div class="input-group">
-                      <span class="input-group-text"
-                        ><i class="fas fa-calculator"></i
-                      ></span>
-                      <input
-                        type="number"
-                        class="form-control"
-                        id="progressNumberInput"
-                        placeholder="Enter new progress value"
-                        min="0"
-                        required
-                      />
+                    <div class="mb-3">
+                      <label for="progressNumberInput" class="form-label"
+                        >New Progress Value</label
+                      >
+                      <div class="input-group">
+                        <span class="input-group-text"
+                          ><i class="fas fa-calculator"></i
+                        ></span>
+                        <input
+                          type="number"
+                          class="form-control"
+                          id="progressNumberInput"
+                          placeholder="Enter new progress value"
+                          min="0"
+                          required
+                        />
+                      </div>
                     </div>
-                  </div>
 
-                  <div class="mb-3">
-                    <label for="progressNote" class="form-label"
-                      >Progress Notes</label
-                    >
-                    <textarea
-                      class="form-control"
-                      id="progressNote"
-                      rows="3"
-                      placeholder="Describe your update"
-                      required
-                    ></textarea>
-                  </div>
-
-                  <div class="mb-3">
-                    <label for="fileUpload" class="form-label"
-                      >Attach Evidence</label
-                    >
-                    <div class="input-group">
-                      <span class="input-group-text"
-                        ><i class="fas fa-paperclip"></i
-                      ></span>
-                      <input
+                    <div class="mb-3">
+                      <label for="progressNote" class="form-label"
+                        >Progress Notes</label
+                      >
+                      <textarea
                         class="form-control"
-                        type="file"
-                        id="fileUpload"
-                        accept=".pdf,.jpg,.jpeg,.png,.doc,.docx,.xlsx,.pptx"
+                        id="progressNote"
+                        rows="3"
+                        placeholder="Describe your update"
                         required
-                      />
+                      ></textarea>
                     </div>
-                    <div class="form-text">
-                      Accepted: PDF, Image, Word, Excel, PowerPoint
-                    </div>
-                  </div>
 
-                  <div class="mb-3">
-                    <label for="fileNote" class="form-label"
-                      >File Description</label
-                    >
-                    <div class="input-group">
-                      <span class="input-group-text"
-                        ><i class="fas fa-sticky-note"></i
-                      ></span>
-                      <input
-                        type="text"
-                        class="form-control"
-                        id="fileNote"
-                        placeholder="E.g. Screenshot of analytics dashboard"
-                        required
-                      />
+                    <div class="mb-3">
+                      <label for="fileUpload" class="form-label"
+                        >Attach Evidence</label
+                      >
+                      <div class="input-group">
+                        <span class="input-group-text"
+                          ><i class="fas fa-paperclip"></i
+                        ></span>
+                        <input
+                          class="form-control"
+                          type="file"
+                          id="fileUpload"
+                          accept=".pdf,.jpg,.jpeg,.png,.doc,.docx,.xlsx,.pptx"
+                          required
+                        />
+                      </div>
+                      <div class="form-text">
+                        Accepted: PDF, Image, Word, Excel, PowerPoint
+                      </div>
                     </div>
-                  </div>
-                  <button type="submit" class="btn btn-teal w-90">
-                    <i class="fas fa-paper-plane me-1"></i> Submit Update
-                  </button>
-                </form>
-              </div>
+
+                    <div class="mb-3">
+                      <label for="fileNote" class="form-label"
+                        >File Description</label
+                      >
+                      <div class="input-group">
+                        <span class="input-group-text"
+                          ><i class="fas fa-sticky-note"></i
+                        ></span>
+                        <input
+                          type="text"
+                          class="form-control"
+                          id="fileNote"
+                          placeholder="E.g. Screenshot of analytics dashboard"
+                          required
+                        />
+                      </div>
+                    </div>
+                    <button type="submit" class="btn btn-teal w-90">
+                      <i class="fas fa-paper-plane me-1"></i> Submit Update
+                    </button>
+                  </form>
+                </div>
               </div>
             </div>
           </div>
@@ -254,7 +252,9 @@
           document.getElementById("kpiTitle").textContent = kpi.title;
           document.getElementById("kpiDescription").textContent =
             kpi.description || "N/A";
-          document.getElementById("kpiTarget").textContent = `${kpi.targetValue || 'N/A'} ${kpi.target || ''}`.trim();
+          document.getElementById("kpiTarget").textContent = `${
+            kpi.targetValue || "N/A"
+          } ${kpi.target || ""}`.trim();
           document.getElementById("kpiProgress").textContent =
             kpi.progress || "0";
           document.getElementById("kpiCompletion").textContent =
@@ -269,16 +269,22 @@
           if (kpi.feedback && kpi.feedback.length > 0) {
             // Sort feedback by date in descending order to get the latest first
             kpi.feedback.sort((a, b) => new Date(b.date) - new Date(a.date));
-            document.getElementById("kpiFeedback").textContent = kpi.feedback[0].text;
+            document.getElementById("kpiFeedback").textContent =
+              kpi.feedback[0].text;
           } else {
-            document.getElementById("kpiFeedback").textContent = "No feedback yet.";
+            document.getElementById("kpiFeedback").textContent =
+              "No feedback yet.";
           }
 
           // Hide the form if KPI status is "Completed"
-          const KPIupdatecontainer = document.getElementById("KPIupdatecontainer");
+          const KPIupdatecontainer =
+            document.getElementById("KPIupdatecontainer");
           if (kpi.status === "Completed") {
             KPIupdatecontainer.style.display = "none";
-            showAlert("This KPI is completed and cannot be updated further.", "info");
+            showAlert(
+              "This KPI is completed and cannot be updated further.",
+              "info"
+            );
           } else {
             KPIupdatecontainer.style.display = "block"; // Ensure it's visible if not completed
           }
