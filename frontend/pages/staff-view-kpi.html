@@ -387,37 +387,57 @@
           return dateA - dateB;
         });
 
-        const cumulativeCompletedData = [];
-        const cumulativeInProgressData = [];
+        // --- MODIFICATION: Get only the last 5 unique dates ---
+        const last5Dates = sortedDates.slice(
+          Math.max(0, sortedDates.length - 5)
+        );
+
+        const completedData = []; // Not cumulative
+        const inProgressData = []; // Not cumulative
         let currentKpiStatuses = {}; // Tracks the latest status of each KPI up to the current date
 
-        sortedDates.forEach((dateKey) => {
-          // Update `currentKpiStatuses` with any new updates for this specific date
-          const updatesForThisDay = dailyKpiStatusSnapshots[dateKey];
-          if (updatesForThisDay) {
-            for (const kpiId in updatesForThisDay) {
-              currentKpiStatuses[kpiId] = updatesForThisDay[kpiId];
+        // Re-initialize currentKpiStatuses for each of the last 5 dates to get "personal" values
+        // This means we need to re-process updates up to each of the 5 dates.
+        // A more efficient way for non-cumulative would be to iterate through the last5Dates
+        // and for each date, determine the KPI statuses relevant to that specific day.
+
+        last5Dates.forEach((dateKey) => {
+          let dailyCompletedCount = 0;
+          let dailyInProgressCount = 0;
+
+          // To get "personal" values for each of the last 5 days, we need to determine the status
+          // of each KPI on *that specific day*. This requires looking at updates up to that date.
+
+          // For each date in last5Dates, we'll re-evaluate the KPI statuses.
+          // This is less efficient than the cumulative approach, but correctly calculates
+          // non-cumulative counts for each selected day.
+          let tempKpiStatusesForThisDay = {};
+          sortedDates.forEach((sd) => {
+            if (sd <= dateKey) {
+              // Consider all updates up to and including the current 'dateKey'
+              const updatesForSd = dailyKpiStatusSnapshots[sd];
+              if (updatesForSd) {
+                for (const kpiId in updatesForSd) {
+                  tempKpiStatusesForThisDay[kpiId] = updatesForSd[kpiId];
+                }
+              }
+            }
+          });
+
+          for (const kpiId in tempKpiStatusesForThisDay) {
+            if (tempKpiStatusesForThisDay[kpiId] === "Completed") {
+              dailyCompletedCount++;
+            } else if (tempKpiStatusesForThisDay[kpiId] === "In Progress") {
+              dailyInProgressCount++;
             }
           }
 
-          // Count current completed and in-progress KPIs based on their latest known status
-          let completedCount = 0;
-          let inProgressCount = 0;
-
-          for (const kpiId in currentKpiStatuses) {
-            if (currentKpiStatuses[kpiId] === "Completed") {
-              completedCount++;
-            } else if (currentKpiStatuses[kpiId] === "In Progress") {
-              inProgressCount++;
-            }
-          }
-
-          cumulativeCompletedData.push(completedCount);
-          cumulativeInProgressData.push(inProgressCount);
+          completedData.push(dailyCompletedCount);
+          inProgressData.push(dailyInProgressCount);
         });
 
-        // Format labels for display (e.g., "Jun 17")
-        const formattedLabels = sortedDates.map((dateKey) => {
+        // Format labels for display (e.g., "Jun 17") using the last5Dates
+        const formattedLabels = last5Dates.map((dateKey) => {
           const date = new Date(dateKey);
           return date.toLocaleDateString("en-US", {
             month: "short",
@@ -429,8 +449,8 @@
         kpiAreaChart.data.labels = formattedLabels;
         kpiAreaChart.data.datasets = [
           {
-            label: "Cumulative Completed KPIs", // Label changed to reflect KPIs
-            data: cumulativeCompletedData,
+            label: "Completed KPIs", // Label changed to reflect non-cumulative KPIs
+            data: completedData,
             fill: true,
             backgroundColor: "rgba(25, 135, 84, 0.2)", // Green for completed
             borderColor: "rgba(25, 135, 84, 1)",
@@ -439,8 +459,8 @@
             pointRadius: 5,
           },
           {
-            label: "Cumulative In Progress KPIs", // Label changed to reflect KPIs
-            data: cumulativeInProgressData,
+            label: "In Progress KPIs", // Label changed to reflect non-cumulative KPIs
+            data: inProgressData,
             fill: true,
             backgroundColor: "rgba(255, 193, 7, 0.2)", // Yellow for in progress
             borderColor: "rgba(255, 193, 7, 1)",
@@ -456,7 +476,7 @@
       const kpiCardsContainerStaff = document.getElementById(
         "kpiCardsContainerStaff"
       );
-      
+
       function renderKPICards(kpisToRender) {
         kpiCardsContainerStaff.innerHTML = ""; // Clear existing cards
 
@@ -501,8 +521,7 @@
             <div class="card h-100 shadow-sm">
               <div class="card-body d-flex flex-column">
                 <h5 class="card-title mb-3">
-                  <a href="staff-kpi-detail.html?id=${
-                    kpi._id
+                  <a href="/kpi/update/${kpi._id}"
                   }" class="text-decoration-none card-title">
                     ${kpi.title || "Unnamed KPI"}
                   </a>

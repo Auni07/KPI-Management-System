@@ -15,8 +15,8 @@ document.addEventListener("DOMContentLoaded", () => {
     "manager-view-evidence.html",
   ].includes(currentPage);
   const isStaffKpiPage = [
-    "staff-view-kpi.html",
-    "staff-kpi-detail.html",
+    "/kpi/view",
+    "/kpi//update/:id",
   ].includes(currentPage);
   const isProfilePage = [
     "user-profile.html",
@@ -43,7 +43,7 @@ document.addEventListener("DOMContentLoaded", () => {
       `
           : `
         <li class="nav-item">
-          <a class="nav-link ${isStaffKpiPage ? "active" : ""}" href="/pages/staff-view-kpi.html">
+          <a class="nav-link ${isStaffKpiPage ? "active" : ""}" href="/kpi/view">
             <i class="fas fa-tasks"></i> <span class="menu-text">My KPI</span>
           </a>
         </li>
