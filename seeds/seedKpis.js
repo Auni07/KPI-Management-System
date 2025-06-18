@@ -1,5 +1,5 @@
 const mongoose = require("mongoose");
-const Kpi = require("../models/kpi"); // assuming you have Kpi model
+const Kpi = require("../models/kpi"); 
 
 mongoose.connect("mongodb://localhost:27017/kpi_system");
 
@@ -12,7 +12,7 @@ const kpis = [
     progress: "Increase by 10%",
     progressNumber: 10,
     startDate: new Date("2025-06-01"),
-    dueDate: new Date("2025-06-30"),
+    dueDate: new Date("2025-06-20"),
     status: "In Progress",
     approvalstat: "Approved",
     assignedTo: new mongoose.Types.ObjectId("6659fa9fb6e1c2cf81e362b1"),
@@ -25,7 +25,7 @@ const kpis = [
     progress: "2 campaigns sent",
     progressNumber: 2,
     startDate: new Date("2025-05-20"),
-    dueDate: new Date("2025-06-25"),
+    dueDate: new Date("2025-06-22"),
     status: "In Progress",
     approvalstat: "Pending",
     assignedTo: new mongoose.Types.ObjectId("6659fa9fb6e1c2cf81e362b1"),
@@ -38,7 +38,7 @@ const kpis = [
     progress: "Post a total of 5 articles",
     progressNumber: 5,
     startDate: new Date("2025-05-01"),
-    dueDate: new Date("2025-06-20"),
+    dueDate: new Date("2025-06-21"),
     status: "Completed",
     approvalstat: "Approved",
     assignedTo: new mongoose.Types.ObjectId("6659fa9fb6e1c2cf81e362b1"),
@@ -51,7 +51,7 @@ const kpis = [
     progress: "0 responses collected",
     progressNumber: 0,
     startDate: new Date("2025-06-15"),
-    dueDate: new Date("2025-06-28"),
+    dueDate: new Date("2025-06-23"),
     status: "Not Started",
     approvalstat: "Rejected",
     assignedTo: new mongoose.Types.ObjectId("6659fa9fb6e1c2cf81e362b1"),
@@ -103,7 +103,7 @@ const kpis = [
     progress: "Draft completed",
     progressNumber: 70,
     startDate: new Date("2025-06-01"),
-    dueDate: new Date("2025-06-29"),
+    dueDate: new Date("2025-06-25"),
     status: "In Progress",
     approvalstat: "Pending",
     assignedTo: new mongoose.Types.ObjectId("6659fa9fb6e1c2cf81e362b2"),

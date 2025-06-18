@@ -9,15 +9,15 @@ const bcrypt = require('bcryptjs');
 const protect = async (req, res, next) => {
   let token;
 
-  // 检查请求头是否有 Bearer token
+  // Check if there is Bearer token in the request headers
   if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
     try {
-      // 从请求头中获取 token
+      // Get the token from the authorization header
       token = req.headers.authorization.split(' ')[1];
-      // 使用 JWT 验证 token
+      // Use JWT to verify the token
       const decoded = jwt.verify(token, 'your_jwt_secret');
 
-      // 将用户信息添加到请求中，供后续使用
+      // Add user information to request object for further use
       req.user = await User.findById(decoded.id);
       next();
     } catch (err) {
@@ -26,7 +26,7 @@ const protect = async (req, res, next) => {
     }
   }
 
-  // 如果没有 token
+  // If without token
   if (!token) {
     res.status(401).json({ message: 'Not authorized, no token' });
   }

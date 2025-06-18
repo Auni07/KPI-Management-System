@@ -1,5 +1,6 @@
 const mongoose = require("mongoose");
-const User = require("../models/user"); // assuming you have User model
+const User = require("../models/user");
+const bcrypt = require('bcryptjs');
 
 mongoose.connect("mongodb://localhost:27017/kpi_system");
 
@@ -9,28 +10,31 @@ const users = [
     companyId: "MNG-8012",
     name: "Alice Parker",
     email: "alice.manager@example.com",
+    phone: "1234567890",
     password: "123",
-    role: "manager",
+    role: "Manager",
     manager: null,
-    department: null, // No specific department for this manager
+    department: "Sales & Marketing",
   },
   {
     _id: new mongoose.Types.ObjectId("6659fa9fb6e1c2cf81e362a2"),
     companyId: "MNG-8013",
     name: "Bob Lee",
     email: "bob.manager@example.com",
+    phone: "1234567890",
     password: "123",
-    role: "manager",
+    role: "Manager",
     manager: null,
-    department: null, // No specific department for this manager
+    department: "IT",
   },
   {
     _id: new mongoose.Types.ObjectId("6659fa9fb6e1c2cf81e362b1"),
     companyId: "STF-9001",
     name: "Charlie Puth",
     email: "charlie.staff@example.com",
+    phone: "1234567890",
     password: "123",
-    role: "staff",
+    role: "Staff",
     manager: new mongoose.Types.ObjectId("6659fa9fb6e1c2cf81e362a1"), // Alice Manager
     department: "Sales & Marketing",
   },
@@ -39,8 +43,9 @@ const users = [
     companyId: "STF-9002",
     name: "Diana Rizq",
     email: "diana.staff@example.com",
+    phone: "1234567890",
     password: "123",
-    role: "staff",
+    role: "Staff",
     manager: new mongoose.Types.ObjectId("6659fa9fb6e1c2cf81e362a2"), // Bob Manager
     department: "Customer Service",
   },
@@ -49,18 +54,20 @@ const users = [
     companyId: "STF-9003",
     name: "Ethan Michael",
     email: "ethan.staff@example.com",
+    phone: "1234567890",
     password: "123",
-    role: "staff",
+    role: "Staff",
     manager: new mongoose.Types.ObjectId("6659fa9fb6e1c2cf81e362a1"), // Alice Manager
-    department: "HR & Admin",
+    department: "Sales & Marketing",
   },
   {
     _id: new mongoose.Types.ObjectId("6659fa9fb6e1c2cf81e362b4"),
     companyId: "STF-9004",
     name: "Ali bin Ahmad",
     email: "ali.staff@example.com",
+    phone: "1234567890",
     password: "123",
-    role: "staff",
+    role: "Staff",
     manager: new mongoose.Types.ObjectId("6659fa9fb6e1c2cf81e362a1"), // Alice Manager
     department: "IT",
   },
@@ -69,19 +76,24 @@ const users = [
     companyId: "STF-9005",
     name: "Aliya Natasha",
     email: "aliya.staff@example.com",
+    phone: "1234567890",
     password: "123",
-    role: "staff",
+    role: "Staff",
     manager: new mongoose.Types.ObjectId("6659fa9fb6e1c2cf81e362a2"), // Bob Manager
     department: "Sales & Marketing",
   },
 ];
 
-User.insertMany(users)
-  .then(() => {
-    console.log("Users seeded!");
-    mongoose.connection.close();
-  })
-  .catch((err) => {
-    console.error(err);
-    mongoose.connection.close();
-  });
+async function seed() {
+  for (let user of users) {
+    user.password = await bcrypt.hash(user.password, 10);
+  }
+  await User.insertMany(users);
+  console.log("Users seeded!");
+  mongoose.connection.close();
+}
+
+seed().catch(err => {
+  console.error(err);
+  mongoose.connection.close();
+});

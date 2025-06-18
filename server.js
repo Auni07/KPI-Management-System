@@ -34,7 +34,7 @@ app.get("/kpi-management", (req, res) => {
 const User = require("./models/user");
 const KPI = require("./models/kpi");
 
-// CORS middleware to allow requests from your frontend
+// CORS middleware to allow requests from the frontend
 app.use(cors({
   origin: '*',  // Allow frontend to make requests
   methods: 'GET,POST,PUT,DELETE',  // Allowed HTTP methods
@@ -69,6 +69,11 @@ app.use('/api/dashboard', require('./routes/dashboardRoutes'));
 app.use("/manage", require("./routes/kpiViewRoutes"));
 app.use('/api/kpis', require('./routes/kpiApiRoutes'));
 app.use('/api', require('./routes/userRoutes'));
+
+const { protect } = require('./middleware/authMiddleware');
+app.use('/api/notifications', protect, require('./routes/notificationRoutes'));
+const reportRoutes = require('./routes/reportRoutes');
+app.use('/api/report', reportRoutes);
 
 // Load staff KPI routes
 const kpiStaffRoutes = require("./routes/kpiStaffRoutes");

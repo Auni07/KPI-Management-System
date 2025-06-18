@@ -1,43 +1,42 @@
-document.getElementById("generateBtn").addEventListener("click", () => {
-  const start = new Date(document.getElementById("startDate").value);
-  const end = new Date(document.getElementById("endDate").value);
+document.getElementById("generateBtn").addEventListener("click", async () => {
+  const start = document.getElementById("startDate").value;
+  const end = document.getElementById("endDate").value;
   const reportContainer = document.getElementById("reportResult");
   reportContainer.innerHTML = "";
 
-  if (!start || !end || start > end) {
+  if (!start || !end || new Date(start) > new Date(end)) {
     reportContainer.innerHTML = "<p>Please enter a valid date range.</p>";
     return;
   }
 
-  const currentUser = "Harry Potter"; // TODO: Replace with actual user
-  const kpis = JSON.parse(localStorage.getItem("kpis")) || [];
-
-  const filteredKPIs = kpis.filter(kpi => {
-    return (
-      new Date(kpi.dueDate) >= start &&
-      new Date(kpi.dueDate) <= end
-    );
+  // Fetch KPIs for the selected date range
+  const res = await fetch(`/api/report?start=${start}&end=${end}`, {
+    headers: {
+      'Authorization': 'Bearer ' + localStorage.getItem('authToken')
+    }
   });
+  const data = await res.json();
+  const kpis = data.kpis || [];
 
-  if (filteredKPIs.length === 0) {
+  if (kpis.length === 0) {
     reportContainer.innerHTML = "<p>No KPIs found for the selected date range.</p>";
     return;
   }
 
-  filteredKPIs.forEach(kpi => {
+  kpis.forEach(kpi => {
     const kpiDiv = document.createElement("div");
     kpiDiv.classList.add("kpi-block");
     kpiDiv.innerHTML = `
       <h3>${kpi.title}</h3>
       <p><strong>Description:</strong> ${kpi.description}</p>
-      <p><strong>Department:</strong> ${kpi.department}</p>
+      <p><strong>Department:</strong> ${kpi.department || ''}</p>
       <p><strong>Target:</strong> ${kpi.targetValue}</p>
-      <p><strong>Due:</strong> ${kpi.dueDate}</p>
+      <p><strong>Due:</strong> ${kpi.dueDate ? new Date(kpi.dueDate).toLocaleDateString() : ''}</p>
       <p><strong>Status:</strong> ${kpi.status}</p>
       <div>
         <strong>Evidence:</strong>
         <ul>
-          ${kpi.evidence.map(e => `<li>${e.date}: ${e.description} (${e.status})</li>`).join("")}
+          ${(kpi.progressUpdates || []).map(e => `<li>${e.createdAt ? new Date(e.createdAt).toLocaleDateString() : ''}: ${e.progressNote || ''}</li>`).join("")}
         </ul>
       </div>
     `;
@@ -60,16 +59,17 @@ document.getElementById("downloadPdfBtn").addEventListener("click", async () => 
   const pageWidth = pdf.internal.pageSize.getWidth();
   const pageHeight = pdf.internal.pageSize.getHeight();
   const imgProps = pdf.getImageProperties(imgData);
-  const imgWidth = pageWidth;
+  const marginX = 10; // 左右页边距
+  const marginY = 15; // 上下页边距
+  const imgWidth = pageWidth - marginX * 2;
   const imgHeight = (imgProps.height * imgWidth) / imgProps.width;
 
-  let position = 10;
-  if (imgHeight > pageHeight) {
-    pdf.addImage(imgData, "PNG", 0, position, imgWidth, pageHeight - 20);
+  let position = marginY;
+  if (imgHeight > pageHeight - marginY * 2) {
+    pdf.addImage(imgData, "PNG", marginX, position, imgWidth, pageHeight - marginY * 2);
   } else {
-    pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
+    pdf.addImage(imgData, "PNG", marginX, position, imgWidth, imgHeight);
   }
-
   pdf.save("kpi-report.pdf");
 });
 

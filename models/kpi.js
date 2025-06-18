@@ -33,7 +33,7 @@ const kpiSchema = new mongoose.Schema({
       }
     }
   ]
-});
+}, {timestamps: true});
 // --- CHANGE THIS PART ---
 // Instead of directly exporting mongoose.model('Kpi', kpiSchema),
 // check if the model already exists.

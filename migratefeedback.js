@@ -5,10 +5,7 @@ const Kpi = require('./models/kpi'); // Adjust path if needed
 
 async function migrateFeedback() {
   try {
-    await mongoose.connect('mongodb://localhost:27017/kpi_system', {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-    });
+    await mongoose.connect('mongodb://localhost:27017/kpi_system');
 
     // Find all KPIs where feedback is a string (legacy format)
     const kpisWithStringFeedback = await Kpi.find({ feedback: { $type: "string" } });

@@ -2,7 +2,7 @@
 export function getUserRole() {
   return localStorage.getItem("userRole");
 }
-// 设置用户角色
+// Set user role in localStorage
 export function setUserRole(role) {
   localStorage.setItem("userRole", role);
 }

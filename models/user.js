@@ -28,7 +28,7 @@ const userSchema = new mongoose.Schema({
   department: {
     type: String,
     enum: ['Sales & Marketing', 'HR & Admin', 'IT', 'Customer Service', 'Account & Finance'],
-    required: true  // ✅ 建议设为 required: true，确保后端匹配前端逻辑
+    required: true  
   }
 }, { timestamps: true });
 
