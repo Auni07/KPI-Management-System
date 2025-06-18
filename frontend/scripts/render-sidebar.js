@@ -15,9 +15,9 @@ document.addEventListener("DOMContentLoaded", () => {
     "manager-view-evidence.html",
   ].includes(currentPage);
   const isStaffKpiPage = [
-    "/kpi/view",
-    "/kpi//update/:id",
-  ].includes(currentPage);
+    "view",
+    "update"
+  ].includes(currentPage) || window.location.pathname.startsWith('/kpi/update/');
   const isProfilePage = [
     "user-profile.html",
     "user-edit-profile.html",
