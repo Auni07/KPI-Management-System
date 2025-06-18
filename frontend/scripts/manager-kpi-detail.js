@@ -17,9 +17,10 @@ document.addEventListener("DOMContentLoaded", function () {
   const deleteBtn = document.getElementById("deleteBtn");
 
   // Initialize Bootstrap modal instance for deletion
-  const deleteKpiModal = new bootstrap.Modal(document.getElementById('deleteKpiModal'));
+  const deleteKpiModal = new bootstrap.Modal(
+    document.getElementById("deleteKpiModal")
+  );
   const confirmDeleteBtn = document.getElementById("confirmDeleteBtn");
-
 
   if (!kpiId) {
     mainContent.innerHTML = `<div class="alert alert-danger mt-4">Error: No KPI ID was found in the URL.</div>`;
@@ -40,46 +41,68 @@ document.addEventListener("DOMContentLoaded", function () {
       document.title = kpi.title; // Update the page title
       kpiTargetEl.textContent = kpi.targetValue;
       kpiCurrentEl.textContent = kpi.progressNumber; // Display the actual progress number
-      kpiStaffEl.textContent = kpi.assignedTo ? kpi.assignedTo.name : 'N/A';
+      kpiStaffEl.textContent = kpi.assignedTo ? kpi.assignedTo.name : "N/A";
       kpiStatusEl.textContent = kpi.approvalstat; // Display the approval status for the static view
-      kpiDueDateEl.textContent = new Date(kpi.dueDate).toISOString().split('T')[0]; // Format date to YYYY-MM-DD
+      kpiDueDateEl.textContent = new Date(kpi.dueDate)
+        .toISOString()
+        .split("T")[0]; // Format date to YYYY-MM-DD
 
       // Revert inputs to static text if they were in edit mode
       // This ensures that after save/fetch, the display is always correct
       kpiTargetEl.innerHTML = kpi.targetValue;
-      kpiDueDateEl.innerHTML = new Date(kpi.dueDate).toISOString().split('T')[0];
+      kpiDueDateEl.innerHTML = new Date(kpi.dueDate)
+        .toISOString()
+        .split("T")[0];
       kpiStatusEl.innerHTML = kpi.approvalstat; // Static text for approvalstat
 
       // Populate the evidence timeline
       timeline.innerHTML = "";
-      if (kpi.evidence && kpi.evidence.length > 0) {
-        kpi.evidence.forEach(evi => {
-          // Assuming evi.status exists on the evidence object itself
-          const statusColor = evi.status === "Approved" ? "success" : evi.status === "Rejected" ? "danger" : "warning text-dark";
+      if (kpi.progressUpdates && kpi.progressUpdates.length > 0) {
+        kpi.progressUpdates.forEach((update, idx, arr) => {
+          const isLatest = idx === arr.length - 1; // 只让最后一个显示状态
           timeline.innerHTML += `
-            <li>
-              <div class="timeline-badge"><i class="fas fa-upload"></i></div>
-              <div class="timeline-panel">
-                <div class="timeline-heading"><h6 class="timeline-title">${new Date(evi.date).toLocaleDateString()}</h6></div>
-                <div class="timeline-body">
-                  <p><strong>Progress:</strong> ${evi.description}</p>
-                  <p>
-                    <a href="${evi.status === "Pending" ? `manager-view-evidence.html?id=${kpi._id}&evidenceId=${evi._id}` : "#"}">📄 ${evi.file}</a>
-                    - <span class="badge bg-${statusColor}">${evi.status}</span>
-                  </p>
-                </div>
-              </div>
-            </li>
-          `;
+      <li>
+        <div class="timeline-badge"><i class="fas fa-upload"></i></div>
+        <div class="timeline-panel">
+          <div class="timeline-heading"><h6 class="timeline-title">${
+            update.createdAt
+              ? new Date(update.createdAt).toLocaleDateString()
+              : ""
+          }</h6></div>
+          <div class="timeline-body">
+            <p><strong>Progress:</strong> ${
+              update.progressNote || update.progressInput || ""
+            }</p>
+            ${
+              update.file && update.file.filePath
+                ? `<p><a href="/${update.file.filePath}" target="_blank">📄 Evidence File</a></p>`
+                : ""
+            }
+            ${
+              update.file && update.file.fileNote
+                ? `<p><strong>File Note:</strong> ${update.file.fileNote}</p>`
+                : ""
+            }
+            ${
+              isLatest
+                ? `<span class="badge bg-warning text-dark">${
+                    kpi.approvalstat || "Pending"
+                  }</span>`
+                : ""
+            }
+          </div>
+        </div>
+      </li>
+    `;
         });
       } else {
-        timeline.innerHTML = '<li><div class="timeline-panel"><p>No evidence has been submitted yet.</p></div></li>';
+        timeline.innerHTML =
+          '<li><div class="timeline-panel"><p>No evidence has been submitted yet.</p></div></li>';
       }
 
       // Ensure buttons are in correct state after fetch
       saveBtn.classList.add("d-none");
       editBtn.classList.remove("d-none");
-
     } catch (error) {
       console.error("Error fetching KPI details:", error);
       mainContent.innerHTML = `<div class="alert alert-danger mt-4">Failed to load KPI details. Please ensure the backend server is running and the ID is correct.</div>`;
@@ -99,10 +122,18 @@ document.addEventListener("DOMContentLoaded", function () {
     // This dropdown is for `approvalstat` (Pending, Approved, Rejected, No New Progress)
     kpiStatusEl.innerHTML = `
       <select class="form-select form-select-sm d-inline-block w-auto" id="kpi-status-input">
-          <option value="Pending" ${originalApprovalStatus === "Pending" ? "selected" : ""}>Pending</option>
-          <option value="Approved" ${originalApprovalStatus === "Approved" ? "selected" : ""}>Approved</option>
-          <option value="Rejected" ${originalApprovalStatus === "Rejected" ? "selected" : ""}>Rejected</option>
-          <option value="No New Progress" ${originalApprovalStatus === "No New Progress" ? "selected" : ""}>No New Progress</option>
+          <option value="Pending" ${
+            originalApprovalStatus === "Pending" ? "selected" : ""
+          }>Pending</option>
+          <option value="Approved" ${
+            originalApprovalStatus === "Approved" ? "selected" : ""
+          }>Approved</option>
+          <option value="Rejected" ${
+            originalApprovalStatus === "Rejected" ? "selected" : ""
+          }>Rejected</option>
+          <option value="No New Progress" ${
+            originalApprovalStatus === "No New Progress" ? "selected" : ""
+          }>No New Progress</option>
       </select>`;
 
     // Toggle button visibility
@@ -111,15 +142,17 @@ document.addEventListener("DOMContentLoaded", function () {
   });
 
   saveBtn.addEventListener("click", async function () {
-    const updatedTargetValue = document.getElementById("kpi-target-input").value;
+    const updatedTargetValue =
+      document.getElementById("kpi-target-input").value;
     const updatedDueDate = document.getElementById("kpi-dueDate-input").value;
-    const updatedApprovalStatus = document.getElementById("kpi-status-input").value; // This value is for approvalstat
+    const updatedApprovalStatus =
+      document.getElementById("kpi-status-input").value; // This value is for approvalstat
 
     try {
       const response = await fetch(`${API_BASE_URL}/api/kpis/${kpiId}`, {
-        method: 'PUT',
+        method: "PUT",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
           targetValue: parseInt(updatedTargetValue), // Ensure it's a number
@@ -130,7 +163,11 @@ document.addEventListener("DOMContentLoaded", function () {
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(`HTTP error! Status: ${response.status}. Message: ${errorData.msg || 'Unknown error'}`);
+        throw new Error(
+          `HTTP error! Status: ${response.status}. Message: ${
+            errorData.msg || "Unknown error"
+          }`
+        );
       }
 
       // Re-fetch to update displayed details and revert inputs
@@ -138,40 +175,43 @@ document.addEventListener("DOMContentLoaded", function () {
 
       // Display success message (using a simple alert for now, consider a custom modal)
       alert("KPI updated successfully!");
-
     } catch (error) {
       console.error("Error saving KPI details:", error);
-      alert(`Failed to save KPI details. ${error.message || ''} Please try again.`);
+      alert(
+        `Failed to save KPI details. ${error.message || ""} Please try again.`
+      );
     }
   });
 
   // --- 3. Delete Logic ---
-  deleteBtn.addEventListener("click", function() {
+  deleteBtn.addEventListener("click", function () {
     deleteKpiModal.show(); // Show the confirmation modal
   });
 
-  confirmDeleteBtn.addEventListener("click", async function() {
+  confirmDeleteBtn.addEventListener("click", async function () {
     try {
       const response = await fetch(`${API_BASE_URL}/api/kpis/${kpiId}`, {
-        method: 'DELETE',
+        method: "DELETE",
       });
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(`HTTP error! Status: ${response.status}. Message: ${errorData.msg || 'Unknown error'}`);
+        throw new Error(
+          `HTTP error! Status: ${response.status}. Message: ${
+            errorData.msg || "Unknown error"
+          }`
+        );
       }
 
       alert("KPI deleted successfully!");
       window.location.href = "/manage/view"; // Redirect after deletion
-
     } catch (error) {
       console.error("Error deleting KPI:", error);
-      alert(`Failed to delete KPI. ${error.message || ''} Please try again.`);
+      alert(`Failed to delete KPI. ${error.message || ""} Please try again.`);
     } finally {
       deleteKpiModal.hide(); // Hide the modal whether successful or not
     }
   });
-
 
   // Initial render when the page loads
   fetchKpiDetails();
