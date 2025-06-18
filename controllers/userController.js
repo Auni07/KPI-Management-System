@@ -59,7 +59,7 @@ exports.registerUser = async (req, res) => {
 // @desc    Login user and get token
 // @access  Public
 exports.loginUser = async (req, res) => {
-  const { email, password } = req.body;
+  const { email, password, role } = req.body;
 
   try {
     const user = await User.findOne({ email });
@@ -68,16 +68,20 @@ exports.loginUser = async (req, res) => {
     }
 
     const isMatch = await bcrypt.compare(password, user.password);
-    console.log('Password match:', isMatch);
-
     if (!isMatch) {
       return res.status(401).json({ message: 'Invalid credentials' });
+    }
+
+    
+    if (role && user.role.toLowerCase() !== role.toLowerCase()) {
+      return res.status(403).json({
+        message: `Role mismatch: your account is registered as "${user.role}"`
+      });
     }
 
     const token = user.generateAuthToken();
     const userWithoutPassword = { ...user._doc };
     delete userWithoutPassword.password;
-
 
     req.session.user = userWithoutPassword;
 
@@ -88,10 +92,11 @@ exports.loginUser = async (req, res) => {
     });
 
   } catch (err) {
-    console.error(err.message);
+    console.error("Login error:", err.message);
     res.status(500).send('Server Error');
   }
 };
+
 
 
 
