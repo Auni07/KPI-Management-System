@@ -68,7 +68,7 @@ const users = [
     phone: "+60123456789",
     password: "1234",
     role: "Staff",
-    manager: new mongoose.Types.ObjectId("6659fa9fb6e1c2cf81e362a1"), // Alice Manager
+    manager: new mongoose.Types.ObjectId("6659fa9fb6e1c2cf81e362a2"), // bob Manager
     department: "IT",
   },
   {
@@ -79,7 +79,7 @@ const users = [
     phone: "+60123456789",
     password: "1234",
     role: "Staff",
-    manager: new mongoose.Types.ObjectId("6659fa9fb6e1c2cf81e362a2"), // Bob Manager
+    manager: new mongoose.Types.ObjectId("6659fa9fb6e1c2cf81e362a1"), // alice Manager
     department: "Sales & Marketing",
   },
 ];

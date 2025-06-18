@@ -12,7 +12,8 @@ async function fetchKpis(filters = {}) {
   let url = `${API_BASE_URL}/api/kpis`;
   const params = new URLSearchParams();
 
-  if (filters.staffId) params.append("staffId", filters.staffId);
+  // ✅ FIXED: Backend expects "staffName", not "staffId"
+  if (filters.staffId) params.append("staffName", filters.staffId);
   if (filters.department) params.append("department", filters.department);
   if (filters.status) params.append("status", filters.status);
 
@@ -36,6 +37,7 @@ async function fetchKpis(filters = {}) {
     `;
   }
 }
+
 
 // Render KPI cards
 function renderCards(kpis) {
@@ -70,7 +72,7 @@ function renderCards(kpis) {
         progressText = "Not Started";
         progressPercentage = 0;
     } else {
-        progressText = "Check Values"; 
+        progressText = "Need Approval"; 
       progressPercentage = 100;
     }
 
@@ -99,15 +101,12 @@ function renderCards(kpis) {
             <p class="card-text"><strong>Indicators:</strong> ${kpi.target}</p>
             <p class="card-text"><strong>Progress:</strong> ${progressText}</p>
             <div class="progress" style="height: 20px;">
-            <div class="progress-bar" role="progressbar" 
-                aria-valuenow="${progressPercentage}" 
-                aria-valuemin="0" 
-                aria-valuemax="100" 
-                style="width: ${progressPercentage}%;">
-                ${progressPercentage}%
-              </div>
+            <div class="progress-bar" role="progressbar"
+              style="width: ${progressPercentage}%"
+              aria-valuenow="${progressPercentage}" aria-valuemin="0" aria-valuemax="100">
+              ${progressPercentage}%
             </div>
-
+            </div>
           </div>
           <div class="mt-3 d-flex align-items-center">
             ${

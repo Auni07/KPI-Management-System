@@ -113,9 +113,14 @@ exports.getManagerKpisData = async (req, res) => {
     // In a real app, you might filter KPIs by assignedTo: { $in: staffUserIds }
     // For simplicity, assuming manager can see all KPIs and filters apply.
     // If a manager only sees KPIs *assigned to staff they manage*, the query should be adjusted.
-    const kpis = await Kpi.find({}) // Fetch all KPIs for now, filters apply later
-      .populate("assignedTo", "name department")
-      .lean();
+    // Fetch only KPIs assigned to the manager's staff
+    const managedStaff = await User.find({ manager: userId, role: 'Staff' }).select('_id');
+    const managedStaffIds = managedStaff.map((s) => s._id);
+
+    const kpis = await Kpi.find({ assignedTo: { $in: managedStaffIds } })
+    .populate("assignedTo", "name department")
+    .lean();
+
 
     // Fetch staff managed by this user
     const staff = await User.find({ manager: userId, role: 'Staff' }, "name department").lean();
@@ -142,64 +147,82 @@ exports.getManagerKpisData = async (req, res) => {
  */
 exports.getKpis = async (req, res) => {
   try {
-    const { staffName, department, status } = req.query; // 'status' from frontend refers to approvalstat
+    if (!req.session.user) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+
+    const managerId = req.session.user._id;
+    const { staffName, department, status } = req.query;
+
     const query = {};
 
-    // Filter by assignedTo (handles both User _id and name)
+    // STEP 1: Fetch all staff under this manager
+    const managedStaff = await User.find({
+      manager: managerId,
+      role: "Staff"
+    }).select("_id name department");
+
+    const managedStaffIds = managedStaff.map(s => s._id.toString());
+
+    // STEP 2: Apply staffName filter, only if it belongs to managedStaff
     if (staffName) {
-      // Check if the provided staffName is a valid ObjectId format
-      if (!mongoose.Types.ObjectId.isValid(staffName)) {
-        // If NOT an ObjectId, assume it's a staff name string
-        const staffUser = await User.findOne({ name: new RegExp(staffName, 'i'), role: 'staff' }).select('_id');
-        if (staffUser) {
-          query.assignedTo = staffUser._id;
-        } else {
-          return res.json([]); // No user found with that name, so no KPIs will match
+      if (mongoose.Types.ObjectId.isValid(staffName)) {
+        if (!managedStaffIds.includes(staffName)) {
+          return res.json([]); // staff not managed by this manager
         }
-      } else {
-        // If IS a valid ObjectId, use it directly
         query.assignedTo = staffName;
+      } else {
+        const matched = managedStaff.find(s => s.name.toLowerCase() === staffName.toLowerCase());
+        if (!matched) {
+          return res.json([]); // staff name not managed by this manager
+        }
+        query.assignedTo = matched._id;
       }
     }
 
-    // Filter by Approval Status (frontend passes this as 'status')
-    if (status) {
-      query.approvalstat = new RegExp(status, 'i'); // Case-insensitive match for approvalstat
-    }
-
-    // Handle Department Filter
+    // STEP 3: Apply department filter (multiple departments allowed)
     if (department) {
-      // If department filter is provided, find users who belong to that department
-      const departmentUsers = await User.find({ department: new RegExp(department, 'i') }).select('_id');
+      const filteredStaff = managedStaff.filter(s => {
+        return Array.isArray(s.department)
+          ? s.department.map(d => d.toLowerCase()).includes(department.toLowerCase())
+          : s.department?.toLowerCase() === department.toLowerCase();
+      });
 
-      if (departmentUsers.length === 0) {
-        return res.json([]); // No users in this department, so no KPIs will match
-      }
+      const filteredStaffIds = filteredStaff.map(s => s._id.toString());
 
-      const departmentUserIds = departmentUsers.map(user => user._id);
+      if (filteredStaffIds.length === 0) return res.json([]);
 
-      // If assignedTo is already in the query (from staffName filter),
-      // we need to check if that specific staff member is in the department.
       if (query.assignedTo) {
-        if (!departmentUserIds.some(id => id.equals(query.assignedTo))) {
-          return res.json([]); // Specific staff member is not in the filtered department
+        // Cross-check that staffName is also in department
+        if (!filteredStaffIds.includes(query.assignedTo.toString())) {
+          return res.json([]);
         }
       } else {
-        // If no staffName filter, then filter by all KPIs assigned to users in the specified department
-        query.assignedTo = { $in: departmentUserIds };
+        query.assignedTo = { $in: filteredStaffIds };
       }
     }
 
-    // Fetch KPIs based on the query
-    const kpis = await Kpi.find(query).populate('assignedTo', 'name email department');
+    // STEP 4: Apply approval status filter
+    if (status) {
+      query.approvalstat = new RegExp(status, "i");
+    }
 
-    // Return the KPIs or an empty array if no matching data
+    // STEP 5: If no specific staff assigned, default to all managed staff
+    if (!query.assignedTo) {
+      query.assignedTo = { $in: managedStaffIds };
+    }
+
+    // STEP 6: Fetch and return only scoped KPIs
+    const kpis = await Kpi.find(query).populate("assignedTo", "name email department");
     res.json(kpis);
+
   } catch (err) {
-    console.error(err.message);
-    res.status(500).send('Server Error');
+    console.error("Error in getKpis:", err);
+    res.status(500).json({ message: "Server Error fetching KPIs." });
   }
 };
+
+
 
 
 
@@ -234,64 +257,69 @@ exports.getKpiById = async (req, res) => {
  * @access  Private (Manager)
  */
 exports.createKpi = async (req, res) => {
-  const { title, description, staffName, targetValue, dueDate, performanceIndicator } = req.body;
+  const {
+    title,
+    description,
+    staffName,
+    targetValue,
+    dueDate,
+    performanceIndicator
+  } = req.body;
 
-  // Log received staffName
-  console.log('Received staffName:', staffName);
+  // Ensure logged-in user
+  if (!req.session.user) {
+    return res.status(401).json({ msg: "Unauthorized" });
+  }
 
-  // Check if targetValue is provided
-  if (!targetValue) {
-    return res.status(400).json({ msg: "Target Value is required." });
+  const managerId = req.session.user._id;
+
+  // Validate required fields
+  if (!targetValue || !staffName || !dueDate || !title || !description || !performanceIndicator) {
+    return res.status(400).json({ msg: "All fields are required." });
   }
 
   try {
-    // Find staff member by name (case-insensitive)
-    const assignedStaff = await User.findOne({
-      name: new RegExp(staffName, 'i'),
+    // 1. Find the staff by name (case-insensitive)
+    const staff = await User.findOne({
+      name: new RegExp(`^${staffName}$`, 'i'),
       role: 'Staff'
     });
 
-    // Log the staff member's data if found
-    console.log('Assigned staff found:', assignedStaff);
-
-    if (!assignedStaff) {
-      console.log('Staff member not found with name:', staffName);  // Log if staff is not found
+    if (!staff) {
       return res.status(404).json({
-        msg: 'Assigned staff member not found. Please ensure the staff name is correct and exists as a staff user.'
+        msg: "Staff member not found. Please ensure the staff name is correct."
       });
     }
 
-    // Proceed with KPI creation
+    // 2. Check if the staff is managed by the current manager
+    if (!staff.manager || staff.manager.toString() !== managerId.toString()) {
+      return res.status(403).json({
+        msg: "You can only assign KPIs to staff members assigned to you."
+      });
+    }
+
+    // 3. Create the KPI
     const newKpi = new Kpi({
       title,
       description,
       target: performanceIndicator,
       targetValue,
-      dueDate: new Date(dueDate), // Ensure date is correctly parsed
-      assignedTo: assignedStaff._id, // Use the staff's ObjectId
-      status: 'Not Started', // Default progress status for newly assigned KPI
-      progressNumber: 0, // Default progress for new KPI
+      dueDate: new Date(dueDate),
+      assignedTo: staff._id,
+      status: 'Not Started',
+      progressNumber: 0,
       approvalstat: 'No New Progress',
-      startDate: new Date() // Default approval status for new KPI
-      // assignedBy: req.session.user._id, // Optional: if you want to track who assigned it
+      startDate: new Date()
     });
 
-    // 3. Save the KPI to the database
-    const kpi = await newKpi.save();
-    res.status(201).json(kpi);
+    const savedKpi = await newKpi.save();
+    res.status(201).json(savedKpi);
   } catch (err) {
-    console.error(err.message);
-    if (err.name === 'ValidationError') {
-      const messages = Object.values(err.errors).map(val => val.message);
-      console.error('Validation errors:', messages); // logs detailed errors to your server console
-      return res.status(400).json({
-        msg: "Validation Error",
-        errors: messages
-      });
-    }
-    res.status(500).send('Server Error during KPI creation');
+    console.error("Error in createKpi:", err.message);
+    res.status(500).json({ msg: "Server error while assigning KPI." });
   }
 };
+
 
 
 

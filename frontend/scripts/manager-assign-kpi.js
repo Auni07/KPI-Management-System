@@ -1,71 +1,95 @@
 // Base URL for your backend API
 const API_BASE_URL = "http://localhost:3000";
 
-console.log('Hello from the console!');
+// Wait for the DOM to load before running any script
+document.addEventListener("DOMContentLoaded", () => {
+  const form = document.getElementById("kpiForm");
+  const dueDateInput = document.getElementById("dueDate");
 
-const form = document.getElementById("kpiForm");
+  // 🟢 BONUS: Set minimum due date to today
+  const todayStr = new Date().toISOString().split("T")[0]; // Format: YYYY-MM-DD
+  dueDateInput.setAttribute("min", todayStr);
 
-form.addEventListener("submit", async (e) => {
-  e.preventDefault();  // Prevent default form submission
-  e.stopPropagation(); // Stop the event from propagating and triggering multiple times
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    e.stopPropagation();
 
-  // Get the targetValue input value
-  const targetValueInput = document.getElementById("targetValue").value;
-
-  // Check if targetValueInput is a valid integer (no decimals or alphabets)
-  // Use a regex to check if the value consists only of digits (integer only)
-  const regex = /^\d+$/;  // Only digits, no decimals or letters
-
-  // If it doesn't match the regex (it's not a valid integer)
-  if (!regex.test(targetValueInput)) {
-    alert("Target Value must be a valid integer (no decimals or alphabet characters).");
-    return; // Prevent form submission if it's not a valid integer
-  }
-
-  const targetValue = parseInt(targetValueInput); // Convert to an integer
-
-  const kpiData = {
-    title: document.getElementById("kpiTitle").value,
-    description: document.getElementById("kpiDescription").value,
-    staffName: document.getElementById("staffName").value,
-    targetValue: targetValue, // Ensure it's an integer
-    dueDate: document.getElementById("dueDate").value,
-    performanceIndicator: document.getElementById("performanceIndicator").value,
-  };
-
-  // Ensure all the fields are filled before submitting
-  if (!kpiData.title || !kpiData.description || !kpiData.staffName || !kpiData.targetValue) {
-    alert("Please fill in all required fields with valid data.");
-    return; // Stop the submission if data is incomplete
-  }
-
-  console.log("Submitting KPI Data:", kpiData);
-
-  try {
-    const response = await fetch(`${API_BASE_URL}/api/kpis`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(kpiData),
-    });
-
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.msg || `HTTP error! status: ${response.status}`);
+    // ✅ Validate targetValue is a valid integer
+    const targetValueInput = document.getElementById("targetValue").value;
+    const regex = /^\d+$/;
+    if (!regex.test(targetValueInput)) {
+      alert("Target Value must be a valid integer (no decimals or alphabet characters).");
+      return;
     }
 
-    const newKpi = await response.json();
-    console.log("KPI assigned successfully:", newKpi);
+    // ✅ Validate due date is not in the past
+    const dueDateValue = dueDateInput.value;
+    const dueDate = new Date(dueDateValue);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    dueDate.setHours(0, 0, 0, 0);
 
-    alert("KPI assigned successfully!");
-    form.reset();
+    if (dueDate < today) {
+      alert("Due Date must be today or a future date. Please select a valid date.");
+      return;
+    }
 
-    // Optional redirect:
-    // window.location.href = "manager-view-assigned-kpi.html";
+    const kpiData = {
+      title: document.getElementById("kpiTitle").value,
+      description: document.getElementById("kpiDescription").value,
+      staffName: document.getElementById("staffName").value,
+      targetValue: parseInt(targetValueInput),
+      dueDate: dueDateValue,
+      performanceIndicator: document.getElementById("performanceIndicator").value,
+    };
 
-  } catch (error) {
-    console.error("Error assigning KPI:", error);
-    alert(`Failed to assign KPI: ${error.message}. Please check console for details.`);
-  }
+    // ✅ Ensure all required fields are filled
+    if (
+      !kpiData.title ||
+      !kpiData.description ||
+      !kpiData.staffName ||
+      !kpiData.targetValue ||
+      !kpiData.dueDate ||
+      !kpiData.performanceIndicator
+    ) {
+      alert("Please fill in all required fields with valid data.");
+      return;
+    }
+
+    console.log("Submitting KPI Data:", kpiData);
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/kpis`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(kpiData),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.msg || `HTTP error! status: ${response.status}`);
+      }
+
+      const newKpi = await response.json();
+      console.log("KPI assigned successfully:", newKpi);
+
+      alert("KPI assigned successfully!");
+      form.reset();
+      dueDateInput.setAttribute("min", todayStr); // Reset min date after form reset
+
+      // ✅ Reload KPI cards in the other view (if the same page handles both)
+     if (typeof fetchKpis === "function") {
+    fetchKpis(); // Re-fetch KPI cards with current filters (optional: you can pass filters again)
+    }
+
+      // Optionally redirect:
+      // window.location.href = "manager-view-assigned-kpi.html";
+
+    } catch (error) {
+      console.error("Error assigning KPI:", error);
+      alert(`Failed to assign KPI: ${error.message}. Please check console for details.`);
+    }
+  });
 });

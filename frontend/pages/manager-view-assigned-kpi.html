@@ -248,8 +248,11 @@
                               <p class="card-text"><strong>Indicators:</strong> ${kpi.target}</p>
                               <p class="card-text"><strong>Progress:</strong> ${progressText}</p>
                               <div class="progress" style="height: 20px;">
-                                  <div class="progress-bar" role="progressbar" aria-valuenow="${progressPercentage}" aria-valuemin="0" aria-valuemax="100" style="width: ${progressPercentage}%;"></div>
-                              </div>
+                              <div class="progress-bar" role="progressbar"
+                                    style="width: ${progressPercentage}%"
+                                    aria-valuenow="${progressPercentage}" aria-valuemin="0" aria-valuemax="100">
+                                    ${progressPercentage}%
+                                  </div>
                           </div>
                           <div class="mt-3 d-flex align-items-center">
                               ${kpi.approvalstat === "Pending"
@@ -257,7 +260,8 @@
                                 : `<span class="me-auto"></span>`
                               }
                               <span class="badge bg-${getStatusBadgeClass(kpi.approvalstat)} ms-2">${kpi.approvalstat}</span>
-                          </div>
+  
+                            </div>
                       </div>
                   </div>
               </div>
