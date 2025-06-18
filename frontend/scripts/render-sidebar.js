@@ -28,20 +28,20 @@ document.addEventListener("DOMContentLoaded", () => {
   if (sidebarLinks) {
     sidebarLinks.innerHTML = `
       <li class="nav-item">
-        <a class="nav-link ${currentPage === "dashboard.html" ? "active" : ""}" href="dashboard.html">
+       <a id="dashboard-link" class="nav-link ${currentPage === "dashboard.html" ? "active" : ""}" href="/dashboard">
+
           <i class="fas fa-home"></i> <span class="menu-text">Dashboard</span>
         </a>
       </li>
-      ${
-        userRole === "manager"
-          ? `
+      ${userRole === "manager"
+        ? `
         <li class="nav-item">
           <a class="nav-link ${isManagerKpiPage ? "active" : ""}" href="/pages/manager-view-assigned-kpi.html">
             <i class="fas fa-book"></i> <span class="menu-text">KPI Management</span>
           </a>
         </li>
       `
-          : `
+        : `
         <li class="nav-item">
           <a class="nav-link ${isStaffKpiPage ? "active" : ""}" href="/pages/staff-view-kpi.html">
             <i class="fas fa-tasks"></i> <span class="menu-text">My KPI</span>
@@ -87,4 +87,14 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     });
   }
+  
+  const dashboardLink = document.getElementById("dashboard-link");
+  if (dashboardLink) {
+    dashboardLink.addEventListener("click", function (e) {
+      e.preventDefault(); // 阻止默认行为
+      window.location.href = "/dashboard"; // 强制刷新页面
+    });
+  }
+
+
 });

@@ -3,7 +3,9 @@ document.getElementById("loginForm").addEventListener("submit", async function (
 
   const email = document.getElementById("email").value;
   const password = document.getElementById("password").value;
-  const role = document.getElementById("role").value;
+  let role = document.getElementById("role").value;
+role = role.charAt(0).toUpperCase() + role.slice(1).toLowerCase();  // e.g. staff → Staff
+
 
   try {
     console.log("Sending login request...", { email, password, role });
