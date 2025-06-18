@@ -5,31 +5,59 @@ const jwt = require('jsonwebtoken');
 // @route   POST /api/register
 // @desc    Register a new user
 // @access  Public
+// @route   POST /api/register
+// @desc    Register a new user
+// @access  Public
 exports.registerUser = async (req, res) => {
-  const { name, email, password, role, companyId, department, phone, managerId } = req.body;
+  const {
+    name,
+    email,
+    password,
+    role,
+    companyId,
+    department,
+    phone,
+    managerId // optional
+  } = req.body;
 
   if (!name || !email || !password || !role || !companyId || !department) {
     return res.status(400).json({ message: "All fields are required" });
   }
 
   try {
+    // 1. Check if user already exists
     const userExists = await User.findOne({ email });
     if (userExists) {
       return res.status(400).json({ message: "User already exists" });
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
-
-    // If the user is a staff member, assign the manager
     let manager = null;
+
+    // 2. If registering a Staff, assign to a manager with available capacity
     if (role === 'Staff') {
-      // Find the manager from the same department
-      manager = await User.findOne({ role: 'Manager'});
+      const potentialManagers = await User.find({ role: 'Manager' });
+
+      for (const potentialManager of potentialManagers) {
+        const staffCount = await User.countDocuments({
+          manager: potentialManager._id,
+          role: 'Staff'
+        });
+
+        if (staffCount < 4) {
+          manager = potentialManager;
+          break; // Stop once an eligible manager is found
+        }
+      }
+
       if (!manager) {
-        return res.status(400).json({ message: "No manager found " });
+        return res.status(400).json({
+          message: "No available manager found in this department (maximum of 4 staff per manager reached)."
+        });
       }
     }
 
+    // 3. Create and save the user
     const user = new User({
       name,
       email,
@@ -38,7 +66,7 @@ exports.registerUser = async (req, res) => {
       companyId,
       department,
       phone,
-      manager: manager ? manager._id : managerId || null
+      manager: manager ? manager._id : managerId || null // fallback if role is not Staff
     });
 
     await user.save();
@@ -49,10 +77,11 @@ exports.registerUser = async (req, res) => {
 
     res.status(201).json({ token, user: userWithoutPassword });
   } catch (err) {
-    console.error("Register error:", err); // 更清晰的错误输出
+    console.error("Register error:", err);
     res.status(500).json({ message: err.message || "Server Error" });
   }
 };
+
 
 
 // @route   POST /api/login
