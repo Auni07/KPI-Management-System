@@ -7,7 +7,6 @@ mongoose.connect("mongodb://localhost:27017/kpi_system");
 const users = [
   {
     _id: new mongoose.Types.ObjectId("6659fa9fb6e1c2cf81e362a1"),
-    companyId: "MNG-8012",
     name: "Alice Parker",
     email: "alice.manager@example.com",
     phone: "+60123456789",
@@ -18,7 +17,6 @@ const users = [
   },
   {
     _id: new mongoose.Types.ObjectId("6659fa9fb6e1c2cf81e362a2"),
-    companyId: "MNG-8013",
     name: "Bob Lee",
     email: "bob.manager@example.com",
     phone: "+60123456789",
@@ -29,7 +27,6 @@ const users = [
   },
   {
     _id: new mongoose.Types.ObjectId("6659fa9fb6e1c2cf81e362b1"),
-    companyId: "STF-9001",
     name: "Charlie Puth",
     email: "charlie.staff@example.com",
     phone: "+60123456789",
@@ -40,7 +37,6 @@ const users = [
   },
   {
     _id: new mongoose.Types.ObjectId("6659fa9fb6e1c2cf81e362b2"),
-    companyId: "STF-9002",
     name: "Diana Rizq",
     email: "diana.staff@example.com",
     phone: "+60123456789",
@@ -51,7 +47,6 @@ const users = [
   },
   {
     _id: new mongoose.Types.ObjectId("6659fa9fb6e1c2cf81e362b3"),
-    companyId: "STF-9003",
     name: "Ethan Michael",
     email: "ethan.staff@example.com",
     phone: "+60123456789",
@@ -62,7 +57,6 @@ const users = [
   },
   {
     _id: new mongoose.Types.ObjectId("6659fa9fb6e1c2cf81e362b4"),
-    companyId: "STF-9004",
     name: "Ali bin Ahmad",
     email: "ali.staff@example.com",
     phone: "+60123456789",
@@ -73,7 +67,6 @@ const users = [
   },
   {
     _id: new mongoose.Types.ObjectId("6659fa9fb6e1c2cf81e362b5"),
-    companyId: "STF-9005",
     name: "Aliya Natasha",
     email: "aliya.staff@example.com",
     phone: "+60123456789",

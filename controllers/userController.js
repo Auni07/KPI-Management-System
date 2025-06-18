@@ -1,6 +1,6 @@
-const User = require('../models/user');
-const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
+const User = require("../models/user");
+const bcrypt = require("bcryptjs");
+const jwt = require("jsonwebtoken");
 
 // @route   POST /api/register
 // @desc    Register a new user
@@ -9,18 +9,10 @@ const jwt = require('jsonwebtoken');
 // @desc    Register a new user
 // @access  Public
 exports.registerUser = async (req, res) => {
-  const {
-    name,
-    email,
-    password,
-    role,
-    companyId,
-    department,
-    phone,
-    managerId // optional
-  } = req.body;
+  const { name, email, password, role, department, phone, managerEmail } =
+    req.body;
 
-  if (!name || !email || !password || !role || !companyId || !department) {
+  if (!name || !email || !password || !role || !department) {
     return res.status(400).json({ message: "All fields are required" });
   }
 
@@ -34,26 +26,18 @@ exports.registerUser = async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, 10);
     let manager = null;
 
-    // 2. If registering a Staff, assign to a manager with available capacity
-    if (role === 'Staff') {
-      const potentialManagers = await User.find({ role: 'Manager' });
-
-      for (const potentialManager of potentialManagers) {
-        const staffCount = await User.countDocuments({
-          manager: potentialManager._id,
-          role: 'Staff'
-        });
-
-        if (staffCount < 4) {
-          manager = potentialManager;
-          break; // Stop once an eligible manager is found
-        }
+    // 2. If registering a Staff, assign to the manager by email
+    if (role === "Staff") {
+      if (!managerEmail) {
+        return res
+          .status(400)
+          .json({ message: "You must provide your manager's email" });
       }
-
+      manager = await User.findOne({ email: managerEmail, role: "Manager" });
       if (!manager) {
-        return res.status(400).json({
-          message: "No available manager found in this department (maximum of 4 staff per manager reached)."
-        });
+        return res
+          .status(400)
+          .json({ message: "Manager not found with this email" });
       }
     }
 
@@ -63,10 +47,9 @@ exports.registerUser = async (req, res) => {
       email,
       password: hashedPassword,
       role,
-      companyId,
       department,
       phone,
-      manager: manager ? manager._id : managerId || null // fallback if role is not Staff
+      manager: manager ? manager._id : null,
     });
 
     await user.save();
@@ -82,8 +65,6 @@ exports.registerUser = async (req, res) => {
   }
 };
 
-
-
 // @route   POST /api/login
 // @desc    Login user and get token
 // @access  Public
@@ -93,18 +74,17 @@ exports.loginUser = async (req, res) => {
   try {
     const user = await User.findOne({ email });
     if (!user) {
-      return res.status(400).json({ message: 'Invalid credentials' });
+      return res.status(400).json({ message: "Invalid credentials" });
     }
 
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
-      return res.status(401).json({ message: 'Invalid credentials' });
+      return res.status(401).json({ message: "Invalid credentials" });
     }
 
-    
     if (role && user.role.toLowerCase() !== role.toLowerCase()) {
       return res.status(403).json({
-        message: `Role mismatch: your account is registered as "${user.role}"`
+        message: `Role mismatch: your account is registered as "${user.role}"`,
       });
     }
 
@@ -117,58 +97,48 @@ exports.loginUser = async (req, res) => {
     res.status(200).json({
       token,
       user: userWithoutPassword,
-      role: user.role
+      role: user.role,
     });
-
   } catch (err) {
     console.error("Login error:", err.message);
-    res.status(500).send('Server Error');
+    res.status(500).send("Server Error");
   }
 };
-
-
-
 
 // @route   GET /api/profile
 // @desc    Get the profile of the logged-in user
 // @access  Private
 exports.getUserProfile = async (req, res) => {
   try {
-    const user = await User.findById(req.user.id).select('-password');
+    const user = await User.findById(req.user.id).select("-password");
     if (!user) {
-      return res.status(404).json({ message: 'User not found' });
+      return res.status(404).json({ message: "User not found" });
     }
 
-    let departmentManager = null;
-    let departmentStaffList = [];
+    let manager = null;
+    let staffList = [];
 
-    if (user.role === 'Staff') {
-      // 查找该部门的 Manager（理论上应该只有一个）
-      departmentManager = await User.findOne({
-        role: 'Manager',
-        department: user.department
-      }).select('name');
+    if (user.role === "Staff") {
+      manager = await User.findById(user.manager).select("name");
     }
 
-    if (user.role === 'Manager') {
-      // 查找属于该部门的 Staff（不包括自己）
-      departmentStaffList = await User.find({
-        role: 'Staff',
-        department: user.department
-      }).select('name');
+    if (user.role === "Manager") {
+      staffList = await User.find({
+        role: "Staff",
+        manager: user._id,
+      }).select("name");
     }
 
     res.status(200).json({
       ...user._doc,
-      departmentManager,
-      departmentStaffList
+      manager,
+      staffList,
     });
   } catch (err) {
     console.error(err.message);
-    res.status(500).send('Server Error');
+    res.status(500).send("Server Error");
   }
 };
-
 
 // @route   PUT /api/profile
 // @desc    Update the profile of the logged-in user
@@ -181,14 +151,14 @@ exports.updateUser = async (req, res) => {
       req.user.id,
       { name, email },
       { new: true }
-    ).select('-password');
+    ).select("-password");
     if (!user) {
-      return res.status(404).json({ message: 'User not found' });
+      return res.status(404).json({ message: "User not found" });
     }
     res.status(200).json(user);
   } catch (err) {
     console.error(err.message);
-    res.status(500).send('Server Error');
+    res.status(500).send("Server Error");
   }
 };
 
@@ -198,32 +168,28 @@ exports.updateUser = async (req, res) => {
 exports.changePassword = async (req, res) => {
   const { currentPassword, newPassword } = req.body;
 
-
   try {
     const user = await User.findById(req.user.id);
     if (!user) {
-      return res.status(404).json({ message: 'User not found' });
+      return res.status(404).json({ message: "User not found" });
     }
 
     const isMatch = await bcrypt.compare(currentPassword, user.password);
 
     if (!isMatch) {
-      return res.status(400).json({ message: 'Incorrect old password' });
+      return res.status(400).json({ message: "Incorrect old password" });
     }
 
     const hashedPassword = await bcrypt.hash(newPassword, 10);
     user.password = hashedPassword;
     await user.save();
 
-    res.status(200).json({ message: 'Password updated successfully' });
+    res.status(200).json({ message: "Password updated successfully" });
   } catch (err) {
     console.error(err.message);
     res.status(500).json({ message: "Server Error" });
-
   }
 };
-
-
 
 // @route   DELETE /api/delete-staff/:id
 // @desc    Delete a staff account (only Manager can delete)
@@ -232,22 +198,26 @@ exports.deleteStaffAccount = async (req, res) => {
   try {
     const userToDelete = await User.findById(req.params.id);
     if (!userToDelete) {
-      return res.status(404).json({ message: 'User not found' });
+      return res.status(404).json({ message: "User not found" });
     }
 
-    if (req.user.role !== 'Manager') {
-      return res.status(403).json({ message: 'Permission denied. Only Managers can delete Staff accounts.' });
+    if (req.user.role !== "Manager") {
+      return res.status(403).json({
+        message: "Permission denied. Only Managers can delete Staff accounts.",
+      });
     }
 
     if (userToDelete._id.toString() === req.user.id) {
-      return res.status(400).json({ message: 'You cannot delete your own account.' });
+      return res
+        .status(400)
+        .json({ message: "You cannot delete your own account." });
     }
 
     await userToDelete.deleteOne();
-    res.status(200).json({ message: 'Staff account deleted successfully' });
+    res.status(200).json({ message: "Staff account deleted successfully" });
   } catch (err) {
     console.error(err.message);
-    res.status(500).send('Server Error');
+    res.status(500).send("Server Error");
   }
 };
 
@@ -256,13 +226,13 @@ exports.deleteStaffAccount = async (req, res) => {
 // @access  Public
 exports.getUniqueDepartments = async (req, res) => {
   try {
-    const departments = await User.distinct('department', {
-      department: { $nin: [null, ''] }
+    const departments = await User.distinct("department", {
+      department: { $nin: [null, ""] },
     });
     res.json(departments.sort());
   } catch (err) {
     console.error(err.message);
-    res.status(500).send('Server Error');
+    res.status(500).send("Server Error");
   }
 };
 
@@ -271,11 +241,13 @@ exports.getUniqueDepartments = async (req, res) => {
 // @access  Private (Manager or Admin only)
 exports.getAllStaff = async (req, res) => {
   try {
-    const staff = await User.find({ role: 'Staff' }).select('_id name email department');
+    const staff = await User.find({ role: "Staff" }).select(
+      "_id name email department"
+    );
     res.json(staff);
   } catch (err) {
     console.error(err.message);
-    res.status(500).send('Server Error');
+    res.status(500).send("Server Error");
   }
 };
 
@@ -288,7 +260,6 @@ exports.getUserByEmail = async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 };
-
 
 exports.deleteAccount = async (req, res) => {
   try {
@@ -303,7 +274,6 @@ exports.deleteAccount = async (req, res) => {
   }
 };
 
-
 exports.deleteStaffAccount = async (req, res) => {
   try {
     const staff = await User.findById(req.params.id);
@@ -311,9 +281,10 @@ exports.deleteStaffAccount = async (req, res) => {
       return res.status(404).json({ message: "Staff not found" });
     }
 
-    
     if (staff._id.toString() === req.user.id) {
-      return res.status(400).json({ message: "Use /delete-account to delete your own account" });
+      return res
+        .status(400)
+        .json({ message: "Use /delete-account to delete your own account" });
     }
 
     await staff.deleteOne();

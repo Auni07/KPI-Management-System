@@ -1,4 +1,6 @@
-import { getUserRole } from "./auth.js";
+function getUserRole() {
+  return localStorage.getItem("userRole")?.toLowerCase() || null;
+}
 
 document.addEventListener("DOMContentLoaded", () => {
   const userRole = getUserRole();
