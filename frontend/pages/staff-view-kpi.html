@@ -604,11 +604,12 @@
           // Fetch KPIs from the backend API
           const response = await fetch("/kpi/api/kpi-staff");
           if (!response.ok) {
-            // Handle HTTP errors
-            const errorData = await response.json();
-            throw new Error(
-              errorData.message || `HTTP error! Status: ${response.status}`
-            );
+            if (response.status === 401) {
+              // If unauthorized, redirect to login page
+              window.location.href = "/login";
+              return;
+            }
+            throw new Error(`HTTP error! status: ${response.status}`);
           }
           const data = await response.json();
           allKpis = data.kpis; // Store fetched KPIs

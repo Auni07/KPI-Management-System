@@ -235,10 +235,12 @@
           // Fetch specific KPI details from your API
           const response = await fetch(`/kpi/api/kpi-staff/${kpiId}`);
           if (!response.ok) {
-            const errorData = await response.json();
-            throw new Error(
-              errorData.message || `HTTP error! Status: ${response.status}`
-            );
+            if (response.status === 401) {
+              // If unauthorized, redirect to login page
+              window.location.href = "/login";
+              return;
+            }
+            throw new Error(`HTTP error! status: ${response.status}`);
           }
           const data = await response.json();
           const kpi = data.kpi;
@@ -279,12 +281,15 @@
           // Hide the form if KPI status is "Completed"
           const KPIupdatecontainer =
             document.getElementById("KPIupdatecontainer");
-          if (kpi.status === "Completed") {
+          if (kpi.status === "Completed" || kpi.approvalstat === "Pending") {
             KPIupdatecontainer.style.display = "none";
-            showAlert(
-              "This KPI is completed and cannot be updated further.",
-              "info"
-            );
+            let message = "";
+            if (kpi.status === "Completed") {
+              message = "This KPI is completed and cannot be updated further.";
+            } else if (kpi.approvalstat === "Pending") {
+              message = "This KPI is pending approval and cannot be updated at this time.";
+            }
+            showAlert(message, "info");
           } else {
             KPIupdatecontainer.style.display = "block"; // Ensure it's visible if not completed
           }
