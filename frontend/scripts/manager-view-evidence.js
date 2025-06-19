@@ -146,6 +146,20 @@ document.addEventListener("DOMContentLoaded", async () => {
       return;
     }
 
+    // Ensure progress is less than the target
+    const progress = parseFloat(kpi.progressNumber);
+    const target = parseFloat(kpi.targetValue);
+
+    if (isNaN(progress) || isNaN(target)) {
+      alert("Invalid progress or target value.");
+      return;
+    }
+
+    if (progress >= target) {
+      alert("KPI progress has met or exceeded the target. Rejection is not allowed.");
+      return;
+    }
+
     // Get feedback from textarea
     const feedback = document.getElementById("RevEvi-Feedback-text").value.trim();
 
