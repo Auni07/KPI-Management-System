@@ -36,8 +36,9 @@ document.addEventListener("DOMContentLoaded", async () => {
   document.getElementById("Btn-GvA-Edit").addEventListener("click", async function() {
     const actualSpan = document.getElementById("gva-actual");
     const targetSpan = document.getElementById("gva-target");
+    const statusSpan = document.getElementById("kpi-status");  // Add this line
     const targetValue = parseFloat(targetSpan.textContent);
-    
+
     if (this.innerText === "Edit") {
       const currentValue = actualSpan.textContent.trim();
       const input = document.createElement("input");
@@ -71,6 +72,9 @@ document.addEventListener("DOMContentLoaded", async () => {
 
       kpi.progressNumber = newValue;
       kpi.status = status;
+
+      // Update the status text immediately on the page
+      statusSpan.textContent = status;
 
       try {
         const response = await fetch(`http://localhost:3000/api/kpis/${kpi._id}`, {
