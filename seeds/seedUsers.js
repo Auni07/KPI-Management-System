@@ -53,7 +53,7 @@ const users = [
     password: "1234",
     role: "Staff",
     manager: new mongoose.Types.ObjectId("6659fa9fb6e1c2cf81e362a1"), // Alice Manager
-    department: "Sales & Marketing",
+    department: "IT",
   },
   {
     _id: new mongoose.Types.ObjectId("6659fa9fb6e1c2cf81e362b4"),

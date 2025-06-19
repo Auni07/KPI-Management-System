@@ -835,8 +835,8 @@ const kpis = [
     description: "Create and launch a social media campaign for product X.",
     target: "campaign launch",
     targetValue: 30,
-    progress: "60% completed",
-    progressNumber: 60,
+    progress: "100% completed",
+    progressNumber: 20,
     startDate: new Date("2025-05-25"),
     dueDate: new Date("2025-06-18"),
     status: "In Progress",
@@ -845,8 +845,8 @@ const kpis = [
     feedback: [{ text: "Rejected. Campaign budget has been reallocated.", date: new Date("2025-06-10") }],
     progressUpdates: [
       {
-        progressInput: "60",
-        progressNote: "Marketing campaign development is 60% complete.",
+        progressInput: "30",
+        progressNote: "Marketing campaign development is 100% complete.",
         file: { filePath: "uploads\\kpi_evidence\\6852a8a86ce1e51c493f535a-1750249229443.pdf", fileNote: "Evidence 1" },
         createdAt: new Date("2025-06-10"),
       }
@@ -857,9 +857,9 @@ const kpis = [
     title: "Organize Client Feedback Session",
     description: "Host a webinar to gather feedback from key clients.",
     target: "successful session",
-    targetValue: 1,
+    targetValue: 10,
     progress: "100% completed",
-    progressNumber: 1,
+    progressNumber: 8,
     startDate: new Date("2025-06-03"),
     dueDate: new Date("2025-06-12"),
     status: "Completed",
@@ -868,7 +868,7 @@ const kpis = [
     feedback: [{ text: "Rejected. Session attendance was below target.", date: new Date("2025-06-04") }],
     progressUpdates: [
       {
-        progressInput: "1",
+        progressInput: "10",
         progressNote: "Client feedback session completed.",
         file: { filePath: "uploads\\kpi_evidence\\6852a8a86ce1e51c493f535a-1750249229443.pdf", fileNote: "Evidence 1" },
         createdAt: new Date("2025-06-04"),
