@@ -12,30 +12,40 @@ document.getElementById("generateBtn").addEventListener("click", async () => {
   // Fetch KPIs for the selected date range
   const res = await fetch(`/api/report?start=${start}&end=${end}`, {
     headers: {
-      'Authorization': 'Bearer ' + localStorage.getItem('authToken')
-    }
+      Authorization: "Bearer " + localStorage.getItem("authToken"),
+    },
   });
   const data = await res.json();
   const kpis = data.kpis || [];
 
   if (kpis.length === 0) {
-    reportContainer.innerHTML = "<p>No KPIs found for the selected date range.</p>";
+    reportContainer.innerHTML =
+      "<p>No KPIs found for the selected date range.</p>";
     return;
   }
 
-  kpis.forEach(kpi => {
+  kpis.forEach((kpi) => {
     const kpiDiv = document.createElement("div");
     kpiDiv.classList.add("kpi-block");
     kpiDiv.innerHTML = `
       <h3>${kpi.title}</h3>
       <p><strong>Description:</strong> ${kpi.description}</p>
       <p><strong>Target:</strong> ${kpi.targetValue}</p>
-      <p><strong>Due:</strong> ${kpi.dueDate ? new Date(kpi.dueDate).toLocaleDateString() : ''}</p>
+      <p><strong>Due:</strong> ${
+        kpi.dueDate ? new Date(kpi.dueDate).toLocaleDateString() : ""
+      }</p>
       <p><strong>Status:</strong> ${kpi.status}</p>
       <div>
         <strong>Evidence:</strong>
         <ul>
-          ${(kpi.progressUpdates || []).map(e => `<li>${e.createdAt ? new Date(e.createdAt).toLocaleDateString() : ''}: ${e.progressNote || ''}</li>`).join("")}
+          ${(kpi.progressUpdates || [])
+            .map(
+              (e) =>
+                `<li>${
+                  e.createdAt ? new Date(e.createdAt).toLocaleDateString() : ""
+                }: ${e.progressNote || ""}</li>`
+            )
+            .join("")}
         </ul>
       </div>
     `;
@@ -43,32 +53,59 @@ document.getElementById("generateBtn").addEventListener("click", async () => {
   });
 });
 
-document.getElementById("downloadPdfBtn").addEventListener("click", async () => {
-  const report = document.getElementById("reportResult");
-  if (!report.innerHTML.trim()) {
-    alert("No report to download!");
-    return;
-  }
+document
+  .getElementById("downloadPdfBtn")
+  .addEventListener("click", async () => {
+    const kpis = window.kpiReportData || [];
+    if (!kpis.length) {
+      alert("No report data found!");
+      return;
+    }
 
-  const { jsPDF } = window.jspdf;
-  const canvas = await html2canvas(report, { scale: 2 });
-  const imgData = canvas.toDataURL("image/png");
+    const { jsPDF } = window.jspdf;
+    const pdf = new jsPDF("p", "mm", "a4");
+    let y = 15;
 
-  const pdf = new jsPDF("p", "mm", "a4");
-  const pageWidth = pdf.internal.pageSize.getWidth();
-  const pageHeight = pdf.internal.pageSize.getHeight();
-  const imgProps = pdf.getImageProperties(imgData);
-  const marginX = 10;
-  const marginY = 15;
-  const imgWidth = pageWidth - marginX * 2;
-  const imgHeight = (imgProps.height * imgWidth) / imgProps.width;
+    pdf.setFontSize(18);
+    pdf.text("KPI Report", 15, y);
+    y += 10;
 
-  let position = marginY;
-  if (imgHeight > pageHeight - marginY * 2) {
-    pdf.addImage(imgData, "PNG", marginX, position, imgWidth, pageHeight - marginY * 2);
-  } else {
-    pdf.addImage(imgData, "PNG", marginX, position, imgWidth, imgHeight);
-  }
-  pdf.save("kpi-report.pdf");
-});
+    kpis.forEach((kpi, idx) => {
+      pdf.setFontSize(14);
+      pdf.text(`${idx + 1}. ${kpi.title}`, 15, y);
+      y += 8;
 
+      pdf.setFontSize(11);
+      pdf.text(`Description: ${kpi.description || ""}`, 15, y);
+      y += 6;
+      pdf.text(`Target: ${kpi.targetValue || ""}`, 15, y);
+      y += 6;
+      pdf.text(
+        `Due: ${kpi.dueDate ? new Date(kpi.dueDate).toLocaleDateString() : ""}`,
+        15,
+        y
+      );
+      y += 6;
+      pdf.text(`Status: ${kpi.status || ""}`, 15, y);
+      y += 6;
+
+      // Evidence
+      if (kpi.progressUpdates && kpi.progressUpdates.length) {
+        pdf.text("Evidence:", 15, y);
+        y += 6;
+        kpi.progressUpdates.forEach((e) => {
+          const line = `- ${
+            e.createdAt ? new Date(e.createdAt).toLocaleDateString() : ""
+          }: ${e.progressNote || ""}`;
+          pdf.text(line, 20, y);
+          y += 6;
+        });
+      }
+      y += 4;
+      // Change page if needed
+      if (y > 270) {
+        pdf.addPage();
+        y = 15;
+      }
+    });
+  });
