@@ -342,7 +342,7 @@ const kpis = [
     startDate: new Date("2025-06-01"),
     dueDate: new Date("2025-06-30"),
     status: "Not Started",
-    approvalstat: "No New Progress",
+    approvalstat: "Approved",
     assignedTo: new mongoose.Types.ObjectId("6659fa9fb6e1c2cf81e362b1"),
     feedback: [{ text: "No new subscribers yet. Focus on promotional activities.", date: new Date("2025-06-18") }],
   },
