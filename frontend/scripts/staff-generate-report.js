@@ -29,7 +29,6 @@ document.getElementById("generateBtn").addEventListener("click", async () => {
     kpiDiv.innerHTML = `
       <h3>${kpi.title}</h3>
       <p><strong>Description:</strong> ${kpi.description}</p>
-      <p><strong>Department:</strong> ${kpi.department || ''}</p>
       <p><strong>Target:</strong> ${kpi.targetValue}</p>
       <p><strong>Due:</strong> ${kpi.dueDate ? new Date(kpi.dueDate).toLocaleDateString() : ''}</p>
       <p><strong>Status:</strong> ${kpi.status}</p>
@@ -59,8 +58,8 @@ document.getElementById("downloadPdfBtn").addEventListener("click", async () => 
   const pageWidth = pdf.internal.pageSize.getWidth();
   const pageHeight = pdf.internal.pageSize.getHeight();
   const imgProps = pdf.getImageProperties(imgData);
-  const marginX = 10; // 左右页边距
-  const marginY = 15; // 上下页边距
+  const marginX = 10;
+  const marginY = 15;
   const imgWidth = pageWidth - marginX * 2;
   const imgHeight = (imgProps.height * imgWidth) / imgProps.width;
 
