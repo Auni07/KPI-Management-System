@@ -6,12 +6,16 @@ const mongoose = require('mongoose');
 // Get KPI summary for Manager dashboard cards
 exports.getKpiSummary = async (req, res) => {
   try {
+    // 获取当前 Manager 手下的员工 ID 列表
+    const staffList = await User.find({ manager: req.user._id }).select('_id');
+    const staffIds = staffList.map(s => s._id);
+
     const [total, inProgress, completed, notStarted, pendingApproval] = await Promise.all([
-      Kpi.countDocuments(),
-      Kpi.countDocuments({ status: 'In Progress' }),
-      Kpi.countDocuments({ status: 'Completed' }),
-      Kpi.countDocuments({ status: 'Not Started' }),
-      Kpi.countDocuments({ approvalstat: 'Pending Approval' })
+      Kpi.countDocuments({ assignedTo: { $in: staffIds } }),
+      Kpi.countDocuments({ assignedTo: { $in: staffIds }, status: 'In Progress' }),
+      Kpi.countDocuments({ assignedTo: { $in: staffIds }, status: 'Completed' }),
+      Kpi.countDocuments({ assignedTo: { $in: staffIds }, status: 'Not Started' }),
+      Kpi.countDocuments({ assignedTo: { $in: staffIds }, approvalstat: 'Pending Approval' }),
     ]);
 
     res.json({
@@ -29,10 +33,18 @@ exports.getKpiSummary = async (req, res) => {
   }
 };
 
+
 // Get average KPI score per staff (Manager bar chart)
 exports.getAverageScoreByStaff = async (req, res) => {
   try {
+    // 获取当前 Manager 手下的员工 ID 列表
+    const staffList = await User.find({ manager: req.user._id }).select('_id');
+    const staffIds = staffList.map(s => s._id);
+
     const result = await Kpi.aggregate([
+      {
+        $match: { assignedTo: { $in: staffIds } }
+      },
       {
         $group: {
           _id: "$assignedTo",
@@ -62,11 +74,13 @@ exports.getAverageScoreByStaff = async (req, res) => {
         }
       }
     ]);
+
     res.json({ success: true, data: result });
   } catch (err) {
     res.status(500).json({ success: false, message: 'Server Error', error: err });
   }
 };
+
 
 // Get current user's assigned KPIs (Staff KPI card list)
 exports.getMyKpis = async (req, res) => {
