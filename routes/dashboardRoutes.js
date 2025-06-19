@@ -8,11 +8,11 @@ const dashboardController = require('../controllers/dashboardController');
 // ================= Manager Routes =================
 // Route: GET /api/dashboard/summary
 // Desc: Get KPI summary for manager dashboard cards
-router.get('/summary', dashboardController.getKpiSummary);
+router.get('/summary', protect,dashboardController.getKpiSummary);
 
 // Route: GET /api/dashboard/average-score-by-staff
 // Desc: Get average KPI score grouped by staff (bar chart)
-router.get('/average-score-by-staff', dashboardController.getAverageScoreByStaff);
+router.get('/average-score-by-staff',protect, dashboardController.getAverageScoreByStaff);
 
 // ================= Staff Routes (Protected) =================
 // Route: GET /api/dashboard/my-kpis
