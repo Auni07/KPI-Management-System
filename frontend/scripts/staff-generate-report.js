@@ -17,6 +17,7 @@ document.getElementById("generateBtn").addEventListener("click", async () => {
   });
   const data = await res.json();
   const kpis = data.kpis || [];
+  window.kpiReportData = kpis; // Store for PDF generation
 
   if (kpis.length === 0) {
     reportContainer.innerHTML =
@@ -108,4 +109,5 @@ document
         y = 15;
       }
     });
+    pdf.save("kpi_report.pdf");
   });
