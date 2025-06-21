@@ -123,3 +123,40 @@ Use one of the following as a `scope`:
 * Notification
   * `feat(notification): auto-generate notification when KPI is assigned`
   * `fix(notification): fix isRead toggle logic`
+
+## Getting Started
+
+1. Clone the repository
+
+```
+git clone https://github.com/yoreumorchid/KPI-Management-System.git
+cd kpi-managerment-system
+```
+
+2. Install dependencies
+
+```
+npm install
+```
+
+3. Seed the database (Optional)
+
+```
+node seeds/seedUsers.js
+node seeds/seedKpis.js
+```
+
+4. Start the server
+
+```
+node server.js
+```
+
+5. Open the application
+
+* Access this in your browser:
+
+```
+http://localhost:3000
+```
+
