@@ -13,6 +13,12 @@ const userController = require('./controllers/userController');
 app.use(express.static(path.join(__dirname, 'frontend'))); // Serve static frontend files
 app.use(express.static(path.join(__dirname, 'public'))); // Serve static public files
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
+// Root route to redirect to user login page 
+app.get('/', (req, res) => {
+  res.redirect('/pages/user-login.html');
+});
+
 app.get("/dashboard", (req, res) => {
   res.sendFile(path.join(__dirname, "frontend", "pages", "dashboard.html"));
 });
