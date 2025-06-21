@@ -128,31 +128,42 @@ Use one of the following as a `scope`:
 
 1. Clone the repository
 
-```
+```sh
 git clone https://github.com/yoreumorchid/KPI-Management-System.git
 cd kpi-managerment-system
 ```
 
 2. Install dependencies
 
-```
+```sh
 npm install
 ```
 
-3. Seed the database (Optional)
+3. Set up environment variables
+
+Create a `.env` file in the root directory and add:
 
 ```
+JWT_SECRET=your_own_secret_key
+MONGO_URI=mongodb://localhost:27017/kpi_system
+SESSION_SECRET=your_own_session_secret
+
+```
+
+4. Seed the database (Optional)
+
+```sh
 node seeds/seedUsers.js
 node seeds/seedKpis.js
 ```
 
-4. Start the server
+5. Start the server
 
-```
+```sh
 node server.js
 ```
 
-5. Open the application
+6. Open the application
 
 * Access this in your browser:
 

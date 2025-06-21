@@ -1,7 +1,8 @@
-const mongoose = require("mongoose");
-const Kpi = require("../models/kpi"); 
+const connectDB = require('../config/db');
+connectDB();
 
-mongoose.connect("mongodb://localhost:27017/kpi_system");
+const mongoose = require("mongoose");
+const Kpi = require("../models/kpi");
 
 const kpis = [
   {

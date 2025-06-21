@@ -25,7 +25,7 @@ exports.getKpiSummary = async (req, res) => {
       }
     });
   } catch (err) {
-    console.error("🔥 getKpiSummary ERROR:", err);
+    console.error("getKpiSummary ERROR:", err);
     res.status(500).json({ success: false, message: 'Server Error', error: err });
   }
 };
@@ -35,7 +35,7 @@ exports.getKpiSummary = async (req, res) => {
 // Get average KPI score per staff (Manager bar chart)
 exports.getAverageScoreByStaff = async (req, res) => {
   try {
-    // 获取当前 Manager 手下的员工 ID 列表
+    // Get the manager's staff list
     const managerId = new mongoose.Types.ObjectId(req.user._id);
     const staffList = await User.find({ manager: managerId }).select('_id');
 

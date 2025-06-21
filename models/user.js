@@ -36,9 +36,10 @@ userSchema.methods.matchPassword = async function(password) {
 };
 
 userSchema.methods.generateAuthToken = function() {
-  return jwt.sign({ id: this._id, role: this.role }, 'your_jwt_secret', {
-    expiresIn: '1h'
-  });
+  return jwt.sign({ id: this._id, role: this.role }, 
+    process.env.JWT_SECRET, 
+    {expiresIn: '1h'}
+  );
 };
 
 userSchema.methods.isManager = function() {

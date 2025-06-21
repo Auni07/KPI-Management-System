@@ -15,7 +15,7 @@ const protect = async (req, res, next) => {
       // Get the token from the authorization header
       token = req.headers.authorization.split(' ')[1];
       // Use JWT to verify the token
-      const decoded = jwt.verify(token, 'your_jwt_secret');
+      const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
       // Add user information to request object for further use
       req.user = await User.findById(decoded.id);

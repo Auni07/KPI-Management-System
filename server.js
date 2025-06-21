@@ -1,7 +1,12 @@
 require("dotenv").config();
+require('dotenv').config();
 const express = require("express");
 const session = require("express-session");
-const mongoose = require("mongoose");
+
+// Connect to MongoDB
+const connectDB = require('./config/db');
+connectDB();
+
 const path = require("path");
 const cors = require("cors");
 const bcrypt = require("bcryptjs");
@@ -48,14 +53,6 @@ app.use(cors({
 }));
 app.use(express.json({ extended: false }));
 
-// Connect DB - Ensure MongoDB connection is established
-mongoose
-  .connect(process.env.MONGO_URI || "mongodb://localhost:27017/kpi_system", { useNewUrlParser: true, useUnifiedTopology: true })
-  .then(() => console.log("MongoDB connected"))
-  .catch(err => {
-    console.error("Error connecting to MongoDB:", err.message);
-    process.exit(1);
-  });
 
 // Middleware - to serve static files and handle form data
 app.use(express.urlencoded({ extended: true }));
@@ -64,7 +61,7 @@ app.use(express.json());
 // Session Configuration
 app.use(
   session({
-    secret: "mySecret",
+    secret: process.env.SESSION_SECRET || "mySecret",
     resave: false,
     saveUninitialized: false,
   })

@@ -1,8 +1,9 @@
+const connectDB = require('../config/db');
+connectDB();
+
 const mongoose = require("mongoose");
 const User = require("../models/user");
 const bcrypt = require('bcryptjs');
-
-mongoose.connect("mongodb://localhost:27017/kpi_system");
 
 const users = [
   {
