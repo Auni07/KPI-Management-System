@@ -1,7 +1,7 @@
 function getUserRole() {
   return localStorage.getItem("userRole")?.toLowerCase() || null;
 }
-  
+
 document.addEventListener("DOMContentLoaded", () => {
   const role = getUserRole();
 
@@ -29,23 +29,40 @@ async function loadManagerDashboard() {
   const headers = { 'Authorization': `Bearer ${token}` };
 
   try {
-    const summaryRes = await fetch("http://localhost:3000/api/dashboard/summary", { headers });
+    const summaryRes = await fetch("/api/dashboard/summary", { headers });
     const summary = await summaryRes.json();
 
-    document.getElementById("totalKpiCount").innerText = summary.data.total;
-    document.getElementById("inProgressCount").innerText = summary.data.inProgress;
-    document.getElementById("completedCount").innerText = summary.data.completed;
-    document.getElementById("notStartedCount").innerText = summary.data.notStarted;
-    document.getElementById("pendingApprovalCount").innerText = summary.data.pendingApproval;
+    const data = summary.data;
+    console.log("🔍 Manager dashboard data:", data);
 
-    const avgScoreRes = await fetch("http://localhost:3000/api/dashboard/average-score-by-staff", { headers });
+    if (!data || data.total === 0) {
+      document.getElementById("manager-dashboard").innerHTML += `
+        <div class="alert alert-info mt-4">
+          📭 No KPI data available yet for your account.
+        </div>
+      `;
+      return;
+    }
+
+    document.getElementById("totalKpiCount").innerText = data.total;
+    document.getElementById("inProgressCount").innerText = data.inProgress;
+    document.getElementById("completedCount").innerText = data.completed;
+    document.getElementById("notStartedCount").innerText = data.notStarted;
+    document.getElementById("pendingApprovalCount").innerText = data.pendingApproval;
+
+    const avgScoreRes = await fetch("/api/dashboard/average-score-by-staff", { headers });
     const avgScore = await avgScoreRes.json();
 
-    renderAvgScoreChart(avgScore.data);
-    renderManagerPieChart(summary.data);
+    renderAvgScoreChart(avgScore.data || []);
+    renderManagerPieChart(data); 
 
   } catch (err) {
     console.error("Manager dashboard fetch error:", err);
+    document.getElementById("manager-dashboard").innerHTML += `
+      <div class="alert alert-danger mt-4">
+        ❌ Failed to load KPI data.
+      </div>
+    `;
   }
 }
 
@@ -92,6 +109,13 @@ function renderEarliestKpiCard(kpi) {
 
 // Render Manager's Doughnut Chart: KPI Status Distribution
 function renderManagerPieChart(data) {
+  const total = (data.completed || 0) + (data.inProgress || 0) + (data.notStarted || 0) + (data.pendingApproval || 0);
+  if (total === 0) {
+    const container = document.getElementById('managerKpiStatusChart').parentNode;
+    container.innerHTML = '<p class="text-muted">📊 No status data available yet.</p>';
+    return;
+  }
+
   const ctx = document.getElementById('managerKpiStatusChart').getContext('2d');
   new Chart(ctx, {
     type: 'doughnut',
@@ -119,6 +143,7 @@ function renderManagerPieChart(data) {
     }
   });
 }
+
 
 // Render Manager's Bar Chart: Average KPI Completion by Staff
 function renderAvgScoreChart(data) {

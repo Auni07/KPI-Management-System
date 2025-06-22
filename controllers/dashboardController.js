@@ -6,12 +6,20 @@ const mongoose = require('mongoose');
 // Get KPI summary for Manager dashboard cards
 exports.getKpiSummary = async (req, res) => {
   try {
+    const user = req.user;
+    const earliestKpi = await Kpi.findOne().sort({ createdAt: 1 }).select('createdAt');
+    const earliestCreatedAt = earliestKpi ? earliestKpi.createdAt : new Date(0);
+    const isNewUser = user.createdAt > earliestCreatedAt;
+    const query = isNewUser
+      ? { createdAt: { $gte: user.createdAt } }
+      : {}; 
+
     const [total, inProgress, completed, notStarted, pendingApproval] = await Promise.all([
-      Kpi.countDocuments(),
-      Kpi.countDocuments({ status: 'In Progress' }),
-      Kpi.countDocuments({ status: 'Completed' }),
-      Kpi.countDocuments({ status: 'Not Started' }),
-      Kpi.countDocuments({ approvalstat: 'Pending Approval' }),
+      Kpi.countDocuments(query),
+      Kpi.countDocuments({ ...query, status: 'In Progress' }),
+      Kpi.countDocuments({ ...query, status: 'Completed' }),
+      Kpi.countDocuments({ ...query, status: 'Not Started' }),
+      Kpi.countDocuments({ ...query, approvalstat: 'Pending Approval' }),
     ]);
 
     res.json({
@@ -24,12 +32,12 @@ exports.getKpiSummary = async (req, res) => {
         pendingApproval
       }
     });
+
   } catch (err) {
-    console.error("getKpiSummary ERROR:", err);
+    console.error('getKpiSummary ERROR:', err);
     res.status(500).json({ success: false, message: 'Server Error', error: err });
   }
 };
-
 
 
 // Get average KPI score per staff (Manager bar chart)
@@ -96,11 +104,23 @@ exports.getMyKpis = async (req, res) => {
 // Get KPI status breakdown for current user (Staff pie chart)
 exports.getMyKpiStatusSummary = async (req, res) => {
   try {
-    const userId = req.user._id;
+    const user = req.user;
+
+    const earliestKpi = await Kpi.findOne().sort({ createdAt: 1 }).select('createdAt');
+    const isNewUser = user.createdAt > (earliestKpi?.createdAt || new Date(0));
+
+    const baseQuery = {
+      assignedTo: user._id
+    };
+
+    if (isNewUser) {
+      baseQuery.createdAt = { $gte: user.createdAt };
+    }
+
     const [completed, inProgress, notStarted] = await Promise.all([
-      Kpi.countDocuments({ assignedTo: userId, status: 'Completed' }),
-      Kpi.countDocuments({ assignedTo: userId, status: 'In Progress' }),
-      Kpi.countDocuments({ assignedTo: userId, status: 'Not Started' })
+      Kpi.countDocuments({ ...baseQuery, status: 'Completed' }),
+      Kpi.countDocuments({ ...baseQuery, status: 'In Progress' }),
+      Kpi.countDocuments({ ...baseQuery, status: 'Not Started' })
     ]);
 
     res.json({
@@ -162,9 +182,17 @@ exports.getMyKpiTrend = async (req, res) => {
 // Get per-KPI completion percentage for current staff
 exports.getMyKpiProgressBars = async (req, res) => {
   try {
-    const userId = req.user._id;
+    const user = req.user;
 
-    const kpis = await Kpi.find({ assignedTo: userId });
+    const earliestKpi = await Kpi.findOne().sort({ createdAt: 1 }).select('createdAt');
+    const isNewUser = user.createdAt > (earliestKpi?.createdAt || new Date(0));
+
+    const query = { assignedTo: user._id };
+    if (isNewUser) {
+      query.createdAt = { $gte: user.createdAt };
+    }
+
+    const kpis = await Kpi.find(query);
 
     const result = kpis.map(kpi => ({
       title: kpi.title,
@@ -181,14 +209,21 @@ exports.getMyKpiProgressBars = async (req, res) => {
 // Get the nearest-due KPI for current staff
 exports.getEarliestDueKpi = async (req, res) => {
   try {
-    const userId = req.user.id;
+    const user = req.user;
 
-    const kpi = await Kpi.find({
-      assignedTo: userId,
+    const earliestKpi = await Kpi.findOne().sort({ createdAt: 1 }).select('createdAt');
+    const isNewUser = user.createdAt > (earliestKpi?.createdAt || new Date(0));
+
+    const query = {
+      assignedTo: user._id,
       status: { $ne: 'Completed' }
-    })
-      .sort({ dueDate: 1 })
-      .limit(1);
+    };
+
+    if (isNewUser) {
+      query.createdAt = { $gte: user.createdAt };
+    }
+
+    const kpi = await Kpi.find(query).sort({ dueDate: 1 }).limit(1);
 
     if (!kpi || kpi.length === 0) {
       return res.json({ msg: "No KPI found" });
