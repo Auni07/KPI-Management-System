@@ -16,6 +16,59 @@ Our project is a web-based application designed to streamline the process of set
 * **Profile Management**: Update user information, change passwords, and manage account settings
 * **Report Generation**: View and download detailed KPI reports
 
+## Tech Stack
+
+- Node.js, Express, MongoDB, Mongoose
+- HTML, CSS, JavaScript, Bootstrap
+- jsPDF for PDF export
+
+## Getting Started
+
+1. Clone the repository
+
+```sh
+git clone https://github.com/yoreumorchid/KPI-Management-System.git
+cd kpi-managerment-system
+```
+
+2. Install dependencies
+
+```sh
+npm install
+```
+
+3. Set up environment variables
+
+Create a `.env` file in the root directory and add:
+
+```
+JWT_SECRET=your_own_secret_key
+MONGO_URI=mongodb://localhost:27017/kpi_system
+SESSION_SECRET=your_own_session_secret
+
+```
+
+4. Seed the database (Optional)
+
+```sh
+node seeds/seedUsers.js
+node seeds/seedKpis.js
+```
+
+5. Start the server
+
+```sh
+node server.js
+```
+
+6. Open the application
+
+* Access this in your browser:
+
+```
+http://localhost:3000
+```
+
 ## Commit Convention for Front-End Development
 
 ### Commit Format
@@ -70,8 +123,6 @@ Use one of the following as a `scope`:
   * `style(profile): adjust form spacing and input field size`
   * `fix(profile): fix password update function`
 
-
-
 ## Commit Convention for Back-End Development
 
 ### Commit Format
@@ -123,51 +174,3 @@ Use one of the following as a `scope`:
 * Notification
   * `feat(notification): auto-generate notification when KPI is assigned`
   * `fix(notification): fix isRead toggle logic`
-
-## Getting Started
-
-1. Clone the repository
-
-```sh
-git clone https://github.com/yoreumorchid/KPI-Management-System.git
-cd kpi-managerment-system
-```
-
-2. Install dependencies
-
-```sh
-npm install
-```
-
-3. Set up environment variables
-
-Create a `.env` file in the root directory and add:
-
-```
-JWT_SECRET=your_own_secret_key
-MONGO_URI=mongodb://localhost:27017/kpi_system
-SESSION_SECRET=your_own_session_secret
-
-```
-
-4. Seed the database (Optional)
-
-```sh
-node seeds/seedUsers.js
-node seeds/seedKpis.js
-```
-
-5. Start the server
-
-```sh
-node server.js
-```
-
-6. Open the application
-
-* Access this in your browser:
-
-```
-http://localhost:3000
-```
-
